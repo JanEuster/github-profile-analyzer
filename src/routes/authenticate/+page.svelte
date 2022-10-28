@@ -7,10 +7,9 @@
 	onMount(async () => {
 		let storedState = localStorage.getItem('gh-state');
 		if (storedState == data.state) {
-			let res = await fetch(`/api/login?code=${data.code}`, { method: 'POST' });
-			if (res.ok) {
-				let json: LoginRes = await res.json();
-				console.log(data);
+			let res = await fetch(`/api/login?code=7ee1dd9037de53ae07c7`, { method: 'POST' });
+			let json = await res.json();
+			if (res.ok && json.access_token) {
 				localStorage.setItem('gh-access-token', json.access_token);
 				window.location.href = '/me';
 			} else {
