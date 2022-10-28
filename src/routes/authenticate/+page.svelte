@@ -15,11 +15,11 @@
 				window.location.href = '/me';
 			} else {
 				loginFailed = true;
-				window.location.href = '/';
+				// window.location.href = '/';
 			}
 		} else {
 			loginFailed = true;
-			window.location.href = '/';
+			// window.location.href = '/';
 		}
 	});
 </script>
