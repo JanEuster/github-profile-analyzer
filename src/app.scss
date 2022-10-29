@@ -1,0 +1,27 @@
+@import '@fontsource/poppins';
+
+*,
+*::before,
+*::after {
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+	border: none;
+}
+
+:root {
+	--font-sans: 'Poppins', sans-serif;
+	--c-text: #e3e3e3;
+	--c-text-muted: #878585;
+	--c-green: #05ff00;
+	--c-grey: #4a4a4a;
+	--c-background: #1d1d1d;
+	--c-dark: #0f0f0f;
+}
+
+body {
+	font-family: var(--font-sans);
+	font-weight: 400;
+	min-height: 100vh;
+	background-color: var(--c-background);
+}

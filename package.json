@@ -30,6 +30,7 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"@fontsource/poppins": "^4.5.10",
 		"node-sass": "^7.0.3",
 		"sass": "^1.55.0"
 	}
