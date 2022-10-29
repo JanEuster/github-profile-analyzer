@@ -53,7 +53,7 @@
 <style lang="scss">
 	.navbar {
 		width: 100vw;
-		height: 172px;
+		height: 160px;
 		border-bottom: var(--border-thick);
 		display: flex;
 	}
@@ -66,9 +66,8 @@
 		margin: auto 0;
 		display: flex;
 	  justify-content: flex-start;
-		width: 139px;
 		.profile-picture {
-			height: 139px;
+		  width: 139px;
 			padding-left: 18px;
 			padding-right: 11px;
 			box-sizing: content-box;
@@ -77,11 +76,11 @@
 		.info {
 			padding: 0 6px;
 			h2 {
-				font-weight: 900;
+				font-weight: 600;
 				font-size: 16px;
 			}
 			h3 {
-				font-weight: 900;
+				font-weight: 400;
 				font-size: 10px;
 			  border-bottom: var(--border-thin);
 			  padding-bottom: 4px;
