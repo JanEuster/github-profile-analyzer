@@ -67,6 +67,8 @@
 	  justify-content: flex-start;
 		.profile-picture {
 		  width: 139px;
+		  height: 139px;
+		  margin: auto;
 			padding-left: 18px;
 			padding-right: 11px;
 			box-sizing: content-box;
