@@ -1,8 +1,10 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import type { Endpoints } from '@octokit/types';
+	type UserResponse = Endpoints['GET /user']['response']['data'];
 
 	let token: string | null;
-	let user: Object | undefined;
+	let user: UserResponse | undefined;
 
 	onMount(async () => {
 		token = localStorage.getItem('gh-access-token');
@@ -14,7 +16,7 @@
 				Authorization: 'Bearer ' + token
 			}
 		});
-		user = await res.json();
+		user = (await res.json()) as UserResponse;
 		console.log(user);
 	});
 </script>
@@ -44,7 +46,7 @@
 				</div>
 			</div>
 			<div class="bio">
-			  {user.bio ?? "no bio"}
+				{user.bio ?? 'no bio'}
 			</div>
 		</div>
 	</nav>
