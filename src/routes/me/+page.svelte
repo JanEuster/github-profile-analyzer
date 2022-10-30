@@ -22,9 +22,8 @@
 	});
 </script>
 
-{#if user}
-	<Navbar {user} />
-{/if}
+<Navbar {user} />
+{#if user}{/if}
 
 <style lang="scss">
 </style>

@@ -1,8 +1,9 @@
 <script lang="ts">
-import type { UserResponse } from "./types";
+	import type { UserResponse } from './types';
 
-export let user: UserResponse
+	export let user: UserResponse | undefined;
 </script>
+
 <nav class="navbar">
 	<div class="global-navigation">
 		<div class="row">
@@ -12,41 +13,45 @@ export let user: UserResponse
 				<i class="ph-magnifying-glass ph-sm" />
 			</div>
 		</div>
-		<span class="bread-crums">
-			Users > {user.login}
-		</span>
+		{#if user}
+			<span class="bread-crums">
+				Users > {user.login}
+			</span>
+		{/if}
 	</div>
-	<div class="user-info">
-		<img class="profile-picture" src={user.avatar_url} />
-		<div class="info">
-			<h2>{user.login}</h2>
-			<h3>{user.name}</h3>
-			<div class="more">
-				<span><i class="ph-link-simple" /><a href={user.blog}>{user.blog}</a></span>
-				<span><i class="ph-at" /><a href={'mailto:' + user.email}>{user.email}</a></span>
-				<span><i class="ph-push-pin" />{user.location}</span>
-				<span
-					><i class="ph-buildings" />
-					{#if user.company}
-						<span><i class="ph-house"><a href={user.company}>{user.company}</a></i></span>
-					{:else}
-						No Company
-					{/if}
-				</span>
-				<span
-					><i class="ph-twitter-logo" />
-					{#if user.twitter_username}
-						<a href={user.twitter_username}>{user.twitter_username}</a>
-					{:else}
-						No Twitter Handle
-					{/if}
-				</span>
+	{#if user}
+		<div class="user-info">
+			<img class="profile-picture" src={user.avatar_url} />
+			<div class="info">
+				<h2>{user.login}</h2>
+				<h3>{user.name}</h3>
+				<div class="more">
+					<span><i class="ph-link-simple" /><a href={user.blog}>{user.blog}</a></span>
+					<span><i class="ph-at" /><a href={'mailto:' + user.email}>{user.email}</a></span>
+					<span><i class="ph-push-pin" />{user.location}</span>
+					<span
+						><i class="ph-buildings" />
+						{#if user.company}
+							<span><i class="ph-house"><a href={user.company}>{user.company}</a></i></span>
+						{:else}
+							No Company
+						{/if}
+					</span>
+					<span
+						><i class="ph-twitter-logo" />
+						{#if user.twitter_username}
+							<a href={user.twitter_username}>{user.twitter_username}</a>
+						{:else}
+							No Twitter Handle
+						{/if}
+					</span>
+				</div>
+			</div>
+			<div class="bio">
+				{user.bio ?? 'no bio'}
 			</div>
 		</div>
-		<div class="bio">
-			{user.bio ?? 'no bio'}
-		</div>
-	</div>
+	{/if}
 </nav>
 
 <style lang="scss">
