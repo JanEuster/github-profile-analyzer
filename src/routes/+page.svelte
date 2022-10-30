@@ -28,6 +28,7 @@
 	})
 </script>
 
-<h1>Welcome to SvelteKit</h1>
-<p>Visit <a href="https://kit.svelte.dev">kit.svelte.dev</a> to read the documentation</p>
-<button on:click={authorize}>Signin With Github</button>
+<h1>Github Profile Analyzer</h1>
+<p>
+<button on:click={authorize}>Sign In With Github</button> to analyze your own and others Github Profiles. 
+</p>

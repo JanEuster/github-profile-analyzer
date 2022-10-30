@@ -1,3 +1,18 @@
+:root {
+	--font-sans: 'Poppins', sans-serif;
+	--c-text: #e3e3e3;
+	--c-text-muted: #878585;
+	--c-green: #05ff00;
+	--c-light-green: #89fa86;
+	--c-grey: #4a4a4a;
+	--c-dark-grey: #2f2f2f;
+	--c-background: #1b1b1b;
+	--c-dark: #0f0f0f;
+	--border-thin: 1px solid var(--c-grey);
+	--border-thick: 2px solid var(--c-grey);
+	--border-r: 3px;
+}
+
 *,
 *::before,
 *::after {
@@ -6,23 +21,10 @@
 	box-sizing: border-box;
 	border: none;
 	color: var(--c-text);
-}
-
-:root {
-	--font-sans: 'Poppins', sans-serif;
-	--c-text: #e3e3e3;
-	--c-text-muted: #878585;
-	--c-green: #05ff00;
-	--c-grey: #4a4a4a;
-	--c-background: #1b1b1b;
-	--c-dark: #0f0f0f;
-	--border-thin: 1px solid var(--c-grey);
-	--border-thick: 2px solid var(--c-grey);
-	--border-r: 3px;
+	font-family: var(--font-sans);
 }
 
 body {
-	font-family: var(--font-sans);
 	font-weight: 400;
 	min-height: 100vh;
 	background-color: var(--c-background);
@@ -34,5 +36,28 @@ a {
 
 	&:hover {
 		color: var(--c-green);
+	}
+}
+
+button {
+	min-width: 160px;
+	margin: 3px 0;
+	font-size: 15px;
+	font-weight: 500;
+	background: var(--c-green);
+	color: var(--c-dark);
+	padding: 3px;
+	border: var(--border-thick);
+	border-color: var(--c-green);
+	border-radius: var(--border-r);
+	cursor: pointer;
+	transition: all 100ms ease;
+	&:hover {
+		margin: 0;
+		border-color: var(--c-light-green);
+		background: var(--c-light-green);
+		font-weight: 600;
+		padding: 3px 1px;
+		border-width: 5px;
 	}
 }
