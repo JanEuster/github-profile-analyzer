@@ -77,6 +77,7 @@
 	}
 	.global-navigation {
 		margin: 9px 13px;
+		margin-right: 0;
 		width: 261px;
 		border-right: var(--border-thin);
 
