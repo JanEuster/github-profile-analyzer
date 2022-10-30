@@ -30,5 +30,5 @@
 
 <h1>Github Profile Analyzer</h1>
 <p>
-<button on:click={authorize}>Sign In With Github</button> to analyze your own and others Github Profiles. 
+<button class="button-submit" on:click={authorize}>Sign In With Github</button> to analyze your own and others Github Profiles. 
 </p>

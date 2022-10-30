@@ -5,6 +5,8 @@
 <svelte:head>
 	<title>github-profile-analyzer</title>
 	<meta name="description" content="github-profile-analyzer" />
+	<!-- phosphor-icons -->
+	<link rel="stylesheet" href="https://unpkg.com/phosphor-icons@1.4.2/src/css/icons.css">
 	<link rel="preconnect" href="https://fonts.googleapis.com" />
 	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 	<link
@@ -14,3 +16,4 @@
 </svelte:head>
 
 <slot />
+

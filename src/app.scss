@@ -39,7 +39,37 @@ a {
 	}
 }
 
+button,
+input {
+	padding: 3px;
+	background: var(--c-dark);
+	border: var(--border-thin);
+	border-radius: var(--border-r);
+	transition: all 100ms ease;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	& > * {
+		color: var(--c-text-muted);
+	}
+	&:hover {
+		border-color: var(--c-text-muted);
+		& > * {
+			color: var(--c-text);
+		}
+	}
+}
+input {
+	font-size: 10px;
+}
 button {
+	cursor: pointer;
+}
+.square {
+	aspect-ratio: 1;
+}
+
+.button-submit {
 	min-width: 160px;
 	margin: 3px 0;
 	font-size: 15px;
@@ -49,9 +79,6 @@ button {
 	padding: 3px;
 	border: var(--border-thick);
 	border-color: var(--c-green);
-	border-radius: var(--border-r);
-	cursor: pointer;
-	transition: all 100ms ease;
 	&:hover {
 		margin: 0;
 		border-color: var(--c-light-green);
@@ -60,4 +87,9 @@ button {
 		padding: 3px 1px;
 		border-width: 5px;
 	}
+}
+
+// phosphor icon styles
+.ph-xl {
+	font-size: 2em;
 }
