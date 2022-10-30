@@ -27,3 +27,12 @@ body {
 	min-height: 100vh;
 	background-color: var(--c-background);
 }
+
+a {
+	color: var(--c-text);
+	transition: color 100ms ease;
+
+	&:hover {
+		color: var(--c-green);
+	}
+}

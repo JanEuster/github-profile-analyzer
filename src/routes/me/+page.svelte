@@ -30,16 +30,16 @@
 				<div class="more">
 					<a href={user.blog}>{user.blog}</a>
 					<a href={'mailto:' + user.email}>{user.email}</a>
-					<span>{user.location}</span><br />
+					<span>{user.location}</span>
 					{#if user.company}
 						<a href={user.company}>{user.company}</a>
 					{:else}
-						<span>No Company</span><br />
+						<span>No Company</span>
 					{/if}
 					{#if user.twitter_username}
 						<a href={user.twitter_username}>{user.twitter_username}</a>
 					{:else}
-						<span>No Twitter Handle</span><br />
+						<span>No Twitter Handle</span>
 					{/if}
 				</div>
 			</div>
@@ -53,7 +53,6 @@
 <style lang="scss">
 	.navbar {
 		width: 100vw;
-		height: 160px;
 		border-bottom: var(--border-thick);
 		display: flex;
 	}
@@ -63,7 +62,7 @@
 		border-right: var(--border-thin);
 	}
 	.user-info {
-		margin: auto 0;
+		margin: 10px 0;
 		display: flex;
 	  justify-content: flex-start;
 		.profile-picture {
