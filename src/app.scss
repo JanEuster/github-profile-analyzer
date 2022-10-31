@@ -34,6 +34,13 @@ body {
 	background-color: var(--c-background);
 }
 
+h3 {
+	font-weight: 600;
+	font-size: 12px;
+	line-height: 14px;
+	padding-top: 3px;
+}
+
 a {
 	color: var(--c-text);
 	transition: color 100ms ease;
@@ -92,6 +99,16 @@ button {
 		padding: 3px 1px;
 		border-width: 5px;
 	}
+}
+
+.box,
+.box-dark {
+	border: var(--border-thin);
+	border-radius: var(--border-r);
+	background-color: var(--c-background);
+}
+.box-dark {
+	background-color: var(--c-dark);
 }
 
 // phosphor icon styles

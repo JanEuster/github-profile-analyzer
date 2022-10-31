@@ -3,6 +3,7 @@
 	import type { AuthenticationStore, UserResponse } from '$lib/types';
 	import { authStore } from '../../stores';
 	import { onMount } from 'svelte';
+	import User from '$lib/User/User.svelte';
 
 	let auth: AuthenticationStore;
 	let user: UserResponse | undefined;
@@ -35,7 +36,9 @@
 </script>
 
 <Navbar {user} />
-{#if user}{/if}
+{#if user}
+	<User {user}/>
+{/if}
 
 <style lang="scss">
 </style>
