@@ -5,65 +5,84 @@
 </script>
 
 <nav class="navbar">
-	<div class="global-navigation">
-		<div class="row">
-			<button class="square home-button"><i class="ph-house ph-xl" /></button>
-			<div class="search-bar">
-				<input />
-				<i class="ph-magnifying-glass ph-sm" />
-			</div>
-		</div>
-		{#if user}
-			<span class="bread-crums">
-				Users > {user.login}
-			</span>
-		{/if}
-	</div>
-	{#if user}
-		<div class="user-info">
-			<img class="profile-picture" src={user.avatar_url} />
-			<div class="info">
-				<h2>{user.login}</h2>
-				<h3>{user.name}</h3>
-				<div class="more">
-					<span><i class="ph-link-simple" /><a href={user.blog}>{user.blog}</a></span>
-					<span><i class="ph-at" /><a href={'mailto:' + user.email}>{user.email}</a></span>
-					<span><i class="ph-push-pin" />{user.location}</span>
-					<span
-						><i class="ph-buildings" />
-						{#if user.company}
-							<span><i class="ph-house"><a href={user.company}>{user.company}</a></i></span>
-						{:else}
-							No Company
-						{/if}
-					</span>
-					<span
-						><i class="ph-twitter-logo" />
-						{#if user.twitter_username}
-							<a href={user.twitter_username}>{user.twitter_username}</a>
-						{:else}
-							No Twitter Handle
-						{/if}
-					</span>
+	<div>
+		<div class="global-navigation">
+			<div class="row">
+				<button class="square home-button"><i class="ph-house ph-xl" /></button>
+				<div class="search-bar">
+					<input />
+					<i class="ph-magnifying-glass ph-sm" />
 				</div>
 			</div>
-			<div class="bio">
-				{user.bio ?? 'no bio'}
-			</div>
+			{#if user}
+				<span class="bread-crums">
+					Users > {user.login}
+				</span>
+			{/if}
 		</div>
-	{/if}
+		{#if user}
+			<div class="user-info">
+				<img class="profile-picture" src={user.avatar_url} alt="profile avatar" />
+				<div class="info">
+					<h2>{user.login}</h2>
+					<h3>{user.name}</h3>
+					<div class="more">
+						<span
+							><i class="ph-link-simple" /><a href={user.blog} rel="noreferrer" target="_blank"
+								>{user.blog}</a
+							></span
+						>
+						<span
+							><i class="ph-at" /><a href={'mailto:' + user.email} rel="noreferrer" target="_blank"
+								>{user.email}</a
+							></span
+						>
+						<span><i class="ph-push-pin" />{user.location}</span>
+						<span
+							><i class="ph-buildings" />
+							{#if user.company}
+								<span
+									><i class="ph-house"
+										><a href={user.company} rel="noreferrer" target="_blank">{user.company}</a></i
+									></span
+								>
+							{:else}
+								No Company
+							{/if}
+						</span>
+						<span
+							><i class="ph-twitter-logo" />
+							{#if user.twitter_username}
+								<a href={user.twitter_username} rel="noreferrer" target="_blank"
+									>{user.twitter_username}</a
+								>
+							{:else}
+								No Twitter Handle
+							{/if}
+						</span>
+					</div>
+				</div>
+				<div class="bio">
+					{user.bio ?? 'no bio'}
+				</div>
+			</div>
+		{/if}
+	</div>
 </nav>
 
 <style lang="scss">
 	.navbar {
-		width: 100vw;
 		border-bottom: var(--border-thick);
-		display: flex;
+		& > div {
+			display: flex;
+			flex-wrap: wrap;
+		}
 	}
 	.global-navigation {
 		margin: 9px 13px;
 		margin-right: 0;
-		width: 261px;
+		min-width: 261px;
+		max-width: 100%;
 		border-right: var(--border-thin);
 
 		.row {
@@ -108,6 +127,7 @@
 	.user-info {
 		margin: 10px 0;
 		display: flex;
+		flex-wrap: wrap;
 		justify-content: flex-start;
 		.profile-picture {
 			width: 139px;

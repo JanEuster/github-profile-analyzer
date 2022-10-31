@@ -23,6 +23,10 @@
 	color: var(--c-text);
 	font-family: var(--font-sans);
 }
+*::selection {
+	color: var(--c-background);
+	background-color: var(--c-green);
+}
 
 body {
 	font-weight: 400;
@@ -35,7 +39,8 @@ a {
 	transition: color 100ms ease;
 
 	&:hover {
-		color: var(--c-green);
+		color: var(--c-background);
+		background-color: var(--c-green);
 	}
 }
 
@@ -90,6 +95,12 @@ button {
 }
 
 // phosphor icon styles
+i {
+	cursor: help;
+	&:hover {
+		text-shadow: 0 0 1px white;
+	}
+}
 .ph-xl {
 	font-size: 2em;
 }
