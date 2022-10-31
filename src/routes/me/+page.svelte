@@ -1,24 +1,25 @@
 <script lang="ts">
 	import Navbar from '$lib/Navbar.svelte';
-	import type { UserResponse } from '$lib/types';
-
+	import type { AuthenticationStore, UserResponse } from '$lib/types';
+	import { authStore } from '../../stores';
 	import { onMount } from 'svelte';
 
-	let token: string | null;
+	let auth: AuthenticationStore;
 	let user: UserResponse | undefined;
 
+	authStore.subscribe((value) => (auth = value));
 	onMount(async () => {
-		token = localStorage.getItem('gh-access-token');
-		if (token == null) {
+		if (auth.valid) {
+			let res = await fetch('https://api.github.com/user', {
+				headers: {
+					Authorization: 'Bearer ' + auth.token
+				}
+			});
+			user = (await res.json()) as UserResponse;
+			console.log(user);
+		} else {
 			window.location.href = '/?redirect_reason=no auth';
 		}
-		let res = await fetch('https://api.github.com/user', {
-			headers: {
-				Authorization: 'Bearer ' + token
-			}
-		});
-		user = (await res.json()) as UserResponse;
-		console.log(user);
 	});
 </script>
 

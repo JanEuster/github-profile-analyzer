@@ -11,3 +11,9 @@ export type LoginRes = {
 	scope: string;
 	token_type: string;
 };
+
+export type AuthenticationStore = {
+	valid: boolean;
+	token: string;
+	me: UserResponse;
+};
