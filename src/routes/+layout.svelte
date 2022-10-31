@@ -23,6 +23,7 @@
 				window.location.pathname = '/me';
 			}
 		}
+		triedAuth = true;
 	});
 </script>
 

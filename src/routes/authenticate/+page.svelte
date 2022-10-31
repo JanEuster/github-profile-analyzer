@@ -14,16 +14,16 @@
 				window.location.href = '/me';
 			} else {
 				loginFailed = true;
-				// window.location.href = '/';
+				window.location.href = '/';
 			}
 		} else {
 			loginFailed = true;
-			// window.location.href = '/';
+			window.location.href = '/';
 		}
 	});
 </script>
 
-{#if data && !loginFailed}
+{#if !loginFailed}
 	<h1>Login in Process...</h1>
 {:else}
 	<h1>Login failed, Redirecting to Home</h1>

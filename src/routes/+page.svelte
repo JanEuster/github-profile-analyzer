@@ -9,7 +9,7 @@
 		}
 		localStorage.setItem('gh-state', state);
 		let redirect_uri = 'https://github-profile-analyzer.vercel.app/authenticate';
-		let url = `https://github.com/login/oauth/authorize?client_id=${env.PUBLIC_GH_ID}&redirect_uri=${redirect_uri}&state=${state}&scope="repo,user`;
+		let url = `https://github.com/login/oauth/authorize?client_id=${env.PUBLIC_GH_ID}&redirect_uri=${redirect_uri}&state=${state}&scope="repo%20user%20read:org`;
 		window.location.href = url;
 	};
 </script>
