@@ -9,7 +9,6 @@
 
 	onMount(async () => {
 		let token = localStorage.getItem('gh-access-token');
-		console.log(token);
 		let res = await fetch('https://api.github.com/user', {
 			headers: {
 				Authorization: 'Bearer ' + token
@@ -18,8 +17,7 @@
 		let json = await res.json();
 		console.log(json.login);
 		if (json.login) {
-			authStore.set({ valid: true, token: token ?? "", me: json });
-			console.log("tried auth")
+			authStore.set({ valid: true, token: token ?? '', me: json, iat: new Date().getSeconds() });
 			triedAuth = true;
 			if (window.location.pathname == '/') {
 				window.location.pathname = '/me';

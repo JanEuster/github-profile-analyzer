@@ -10,13 +10,24 @@
 	authStore.subscribe((value) => (auth = value));
 	onMount(async () => {
 		if (auth.valid) {
-			let res = await fetch('https://api.github.com/user', {
-				headers: {
-					Authorization: 'Bearer ' + auth.token
-				}
-			});
-			user = (await res.json()) as UserResponse;
-			console.log(user);
+			if (auth.iat + 60 > new Date().getSeconds()) {
+				// use stored value for own user if its not too old
+				user = auth.me;
+			} else {
+				let res = await fetch('https://api.github.com/user', {
+					headers: {
+						Authorization: 'Bearer ' + auth.token
+					}
+				});
+				let user = (await res.json()) as UserResponse;
+
+				// update old me to current data
+				authStore.update((value) => {
+					value.me = user;
+					value.iat = new Date().getSeconds();
+					return value;
+				});
+			}
 		} else {
 			window.location.href = '/?redirect_reason=no auth';
 		}

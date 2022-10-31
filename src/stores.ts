@@ -4,5 +4,6 @@ import type { AuthenticationStore } from './lib/types';
 export const authStore = writable({
 	valid: false,
 	token: '',
-	me: {}
+	me: {},
+	iat: new Date().getSeconds()
 } as AuthenticationStore);

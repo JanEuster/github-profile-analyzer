@@ -16,4 +16,5 @@ export type AuthenticationStore = {
 	valid: boolean;
 	token: string;
 	me: UserResponse;
+	iat: number;
 };
