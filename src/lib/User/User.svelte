@@ -3,6 +3,7 @@
 	import { authStore } from '../../stores';
 	import { onMount } from 'svelte';
 	import RelatedUsers from './RelatedUsers.svelte';
+import UserRepoActivity from './UserRepoActivity.svelte';
 
 	export let user: UserResponse;
 	let auth: AuthenticationStore;
@@ -14,7 +15,10 @@
 
 <main class="user">
 	<div class="user-inner">
-		<RelatedUsers {user} />
+		<div class="row">
+			<RelatedUsers {user} />
+			<UserRepoActivity />
+		</div>
 	</div>
 </main>
 
@@ -23,6 +27,12 @@
 		width: 100vw;
 		padding: 17px 13px;
 		.user-inner {
+			.row {
+				min-height: 500px;
+				display: flex;
+				gap: 18px;
+				flex-direction: row;
+			}
 		}
 	}
 </style>

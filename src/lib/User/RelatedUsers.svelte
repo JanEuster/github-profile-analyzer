@@ -166,10 +166,10 @@
 
 <style lang="scss">
 	.related-users {
-		width: 241px;
+		max-width: 250px;
 		display: flex;
 		flex-direction: column;
-		max-height: 300px;
+		min-height: 100%;
 		position: relative;
 		padding: 7px 9px;
 		.related-users-categories {
@@ -192,6 +192,7 @@
 			margin-top: 7px;
 			padding: 13px 11px;
 			width: 100%;
+			height: 100%;
 			min-height: 100px;
 			overflow-y: scroll;
 			&::-webkit-scrollbar {
