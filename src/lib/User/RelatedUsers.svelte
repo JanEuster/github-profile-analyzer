@@ -1,5 +1,11 @@
 <script lang="ts">
-	import type { AuthenticationStore, UserPreviewResponse, UserResponse } from '../types';
+	import type {
+		AuthenticationStore,
+		RepoResponse,
+		ReposResponse,
+		UserPreviewResponse,
+		UserResponse
+	} from '../types';
 	import { authStore } from '../../stores';
 	import { onMount } from 'svelte';
 
@@ -13,34 +19,87 @@
 	const setRelatedUsers = async () => {
 		switch (selected) {
 			case 'following':
+				relatedUsers = [];
 				fetch(`https://api.github.com/users/${user.login}/following`)
-					.then((res) => res.json() as Promise<UserPreviewResponse[]>)
+					.then((res) => res.json() as Promise<UserPreviewResponse>)
 					.then(async (res) => {
 						let u = [];
 						for (const user of res) {
 							let res = await fetch(user.url);
-							let json = await res.json() as UserResponse;
-							console.log(json);
+							let json = (await res.json()) as UserResponse;
 							u.push(json);
 						}
 						relatedUsers = u;
 					});
 				break;
 			case 'followers':
+				relatedUsers = [];
 				fetch(user.followers_url)
-					.then((res) => res.json() as Promise<UserPreviewResponse[]>)
+					.then((res) => res.json() as Promise<UserPreviewResponse>)
 					.then(async (res) => {
 						let u = [];
 						for (const user of res) {
 							let res = await fetch(user.url);
-							let json = await res.json() as UserResponse;
-							console.log(json);
+							let json = (await res.json()) as UserResponse;
 							u.push(json);
 						}
 						relatedUsers = u;
 					});
 				break;
 			case 'co-contributors':
+				relatedUsers = [];
+				fetch(user.repos_url)
+					.then((res) => res.json() as Promise<ReposResponse>)
+					.then(async (res) => {
+						let u: UserResponse[] = [];
+						for (let repoPreview of res) {
+							let repoRes = await fetch(
+								`https://api.github.com/repos/${repoPreview.owner.login}/${repoPreview.name}`,
+								{
+									headers: {
+										Authorization: 'Bearer ' + auth.token
+									}
+								}
+							);
+							let repo = (await repoRes.json()) as RepoResponse;
+
+							let contributorsRes = await fetch(
+								`https://api.github.com/repos/${repo.owner.login}/${repo.name}/collaborators`,
+								{
+									headers: {
+										Authorization: 'Bearer ' + auth.token
+									}
+								}
+							);
+							let contributors = (await contributorsRes.json()) as UserResponse[];
+
+							for (const contributor of contributors) {
+								if (user.id !== contributor.id) {
+									u.push(contributor);
+								}
+							}
+
+							// if repo is forked
+							if (repo.fork && repo.parent) {
+								let isDup = false;
+								for (const uu of u) {
+									if (uu.id == repo.parent.owner.id) {
+										console.log('dup', uu, repo.parent.owner);
+										isDup = true;
+									}
+								}
+								if (!isDup) {
+									let ownerRes = await fetch(
+										`https://api.github.com/users/${repo.parent.owner.login}`
+									);
+									let owner = (await ownerRes.json()) as UserResponse;
+									u.push(owner);
+								}
+							}
+
+						}
+						relatedUsers = u;
+					});
 				break;
 		}
 	};
@@ -81,7 +140,7 @@
 			<div class="related-user">
 				<img class="avatar" src={relatedUser.avatar_url} />
 				<div class="login-name">
-						<span class="name">{relatedUser.name ?? relatedUser.login}</span>
+					<span class="name">{relatedUser.name ?? relatedUser.login}</span>
 					{#if relatedUser.name}
 						<span class="login">{relatedUser.login}</span>
 					{/if}
