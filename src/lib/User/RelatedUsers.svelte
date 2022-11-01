@@ -14,92 +14,106 @@
 	let selected = 'following';
 	let relatedUsers: UserResponse[] = [];
 
+	let followingUsers: UserResponse[] | false = false;
+	let followersUsers: UserResponse[] | false = false;
+	let contributorsUsers: UserResponse[] | false = false;
+
 	authStore.subscribe((value) => (auth = value));
+
+	async function getFollowing(): Promise<UserResponse[]> {
+		return fetch(`https://api.github.com/users/${user.login}/following`)
+			.then((res) => res.json() as Promise<UserPreviewResponse>)
+			.then(async (res) => {
+				let u = [];
+				for (const user of res) {
+					let res = await fetch(user.url);
+					let json = (await res.json()) as UserResponse;
+					u.push(json);
+				}
+				followingUsers = u;
+				return followingUsers;
+			});
+	}
+	async function getFollowers(): Promise<UserResponse[]> {
+		return fetch(user.followers_url)
+			.then((res) => res.json() as Promise<UserPreviewResponse>)
+			.then(async (res) => {
+				let u = [];
+				for (const user of res) {
+					let res = await fetch(user.url);
+					let json = (await res.json()) as UserResponse;
+					u.push(json);
+				}
+				followersUsers = u;
+				return followersUsers;
+			});
+	}
+	async function getContributors(): Promise<UserResponse[]> {
+		return fetch(user.repos_url)
+			.then((res) => res.json() as Promise<ReposResponse>)
+			.then(async (res) => {
+				let u: UserResponse[] = [];
+				for (let repoPreview of res) {
+					let repoRes = await fetch(
+						`https://api.github.com/repos/${repoPreview.owner.login}/${repoPreview.name}`,
+						{
+							headers: {
+								Authorization: 'Bearer ' + auth.token
+							}
+						}
+					);
+					let repo = (await repoRes.json()) as RepoResponse;
+
+					let contributorsRes = await fetch(
+						`https://api.github.com/repos/${repo.owner.login}/${repo.name}/collaborators`,
+						{
+							headers: {
+								Authorization: 'Bearer ' + auth.token
+							}
+						}
+					);
+					let contributors = (await contributorsRes.json()) as UserResponse[];
+
+					for (const contributor of contributors) {
+						if (user.id !== contributor.id) {
+							u.push(contributor);
+						}
+					}
+
+					// if repo is forked
+					if (repo.fork && repo.parent) {
+						let isDup = false;
+						for (const uu of u) {
+							if (uu.id == repo.parent.owner.id) {
+								console.log('dup', uu, repo.parent.owner);
+								isDup = true;
+							}
+						}
+						if (!isDup) {
+							let ownerRes = await fetch(`https://api.github.com/users/${repo.parent.owner.login}`);
+							let owner = (await ownerRes.json()) as UserResponse;
+							u.push(owner);
+						}
+					}
+				}
+				contributorsUsers = u;
+				return contributorsUsers;
+			});
+	}
 
 	const setRelatedUsers = async () => {
 		switch (selected) {
 			case 'following':
 				relatedUsers = [];
-				fetch(`https://api.github.com/users/${user.login}/following`)
-					.then((res) => res.json() as Promise<UserPreviewResponse>)
-					.then(async (res) => {
-						let u = [];
-						for (const user of res) {
-							let res = await fetch(user.url);
-							let json = (await res.json()) as UserResponse;
-							u.push(json);
-						}
-						relatedUsers = u;
-					});
+				relatedUsers = followingUsers ? followingUsers : await getFollowing();
 				break;
 			case 'followers':
 				relatedUsers = [];
-				fetch(user.followers_url)
-					.then((res) => res.json() as Promise<UserPreviewResponse>)
-					.then(async (res) => {
-						let u = [];
-						for (const user of res) {
-							let res = await fetch(user.url);
-							let json = (await res.json()) as UserResponse;
-							u.push(json);
-						}
-						relatedUsers = u;
-					});
+				relatedUsers = followersUsers ? followersUsers : await getFollowers();
 				break;
 			case 'co-contributors':
 				relatedUsers = [];
-				fetch(user.repos_url)
-					.then((res) => res.json() as Promise<ReposResponse>)
-					.then(async (res) => {
-						let u: UserResponse[] = [];
-						for (let repoPreview of res) {
-							let repoRes = await fetch(
-								`https://api.github.com/repos/${repoPreview.owner.login}/${repoPreview.name}`,
-								{
-									headers: {
-										Authorization: 'Bearer ' + auth.token
-									}
-								}
-							);
-							let repo = (await repoRes.json()) as RepoResponse;
-
-							let contributorsRes = await fetch(
-								`https://api.github.com/repos/${repo.owner.login}/${repo.name}/collaborators`,
-								{
-									headers: {
-										Authorization: 'Bearer ' + auth.token
-									}
-								}
-							);
-							let contributors = (await contributorsRes.json()) as UserResponse[];
-
-							for (const contributor of contributors) {
-								if (user.id !== contributor.id) {
-									u.push(contributor);
-								}
-							}
-
-							// if repo is forked
-							if (repo.fork && repo.parent) {
-								let isDup = false;
-								for (const uu of u) {
-									if (uu.id == repo.parent.owner.id) {
-										console.log('dup', uu, repo.parent.owner);
-										isDup = true;
-									}
-								}
-								if (!isDup) {
-									let ownerRes = await fetch(
-										`https://api.github.com/users/${repo.parent.owner.login}`
-									);
-									let owner = (await ownerRes.json()) as UserResponse;
-									u.push(owner);
-								}
-							}
-
-						}
-						relatedUsers = u;
-					});
+				relatedUsers = contributorsUsers ? contributorsUsers : await getContributors();
 				break;
 		}
 	};
