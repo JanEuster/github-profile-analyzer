@@ -255,24 +255,14 @@
 		}
 		const widthOfDay = 1 / length;
 
+		// array of account lifetime to store contributions
 		const allDays = new Array(yearLength - beforeFirst + yearLength * (fullYearsInRange().length - 1) + dayOfYear(timelineEnd))
 		allDays.fill(0);
 		console.log(allDays);
 		for (let year = timelineBegin.getFullYear(); year <= timelineEnd.getFullYear(); year++) {
-			let dateEnd;
 			let dateStart;
-			if (timelineEnd.getFullYear() !== year) {
-			}
 			dateStart = `${year}-01-01T01:00:01Z`;
-			// dateEnd = `${year}-12-30T23:59:59Z`;
-			dateEnd = new Date(
-				year + ' ' + timelineEnd.getMonth() + ' ' + timelineEnd.getDate() + ' 13:59:59'
-			).toISOString();
-			let paramStr = '';
-			paramStr = `${'to: "' + dateEnd + '"'}`;
-			paramStr = '';
-			paramStr = `(${'from: "' + dateStart + '"'}, ${'to: "' + dateEnd + '"'})`;
-			paramStr = `(${'from: "' + dateStart + '"'})`;
+			let paramStr = `(${'from: "' + dateStart + '"'})`;
 			let body = contributionsQuery(paramStr);
 			let contributionsRes = (await fetch('https://api.github.com/graphql', {
 				method: 'POST',
@@ -299,13 +289,22 @@
 			}
 		}
 		console.log(allDays);
+		const node = document.getElementById("timeline-data");
+		const maxContributions = Math.max(...allDays);
+		for (const day of allDays) {
+			const elem = document.createElement("div");
+			elem.style.backgroundColor = "var(--c-green)";
+			elem.style.width = "100%";
+			elem.style.height = `${100*day/maxContributions}%`
+			node?.appendChild(elem)
+		}
 	});
 </script>
 
 <div class="user-repo-activity box">
 	<div class="timeline-wrapper">
 		<div class="timeline box-dark">
-			<div class="data-wrapper">
+			<div id="timeline-data" class="data-wrapper">
 				<div class="overlay">
 					<div class="years">
 						{#each fullYearsInRange() as year}
@@ -346,6 +345,8 @@
 					height: 100%;
 					background-color: black;
 					position: relative;
+					display: flex;
+					align-items: end;
 
 					.overlay {
 						position: absolute;
