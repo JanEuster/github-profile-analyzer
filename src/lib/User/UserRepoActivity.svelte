@@ -5,7 +5,7 @@
 		ReposResponse,
 		UserResponse
 	} from '$lib/types';
-import type { GraphQlQueryResponseData } from '@octokit/graphql';
+	import type { GraphQlQueryResponseData } from '@octokit/graphql';
 
 	import { onMount } from 'svelte';
 	import { authStore } from '../../stores';
@@ -222,7 +222,7 @@ import type { GraphQlQueryResponseData } from '@octokit/graphql';
 			}
 			`
 		};
-	}
+	};
 
 	const daysBetween = (start: Date, end: Date) =>
 		Math.floor((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
@@ -255,29 +255,50 @@ import type { GraphQlQueryResponseData } from '@octokit/graphql';
 		}
 		const widthOfDay = 1 / length;
 
+		const allDays = new Array(yearLength - beforeFirst + yearLength * (fullYearsInRange().length - 1) + dayOfYear(timelineEnd))
+		allDays.fill(0);
+		console.log(allDays);
 		for (let year = timelineBegin.getFullYear(); year <= timelineEnd.getFullYear(); year++) {
 			let dateEnd;
 			let dateStart;
 			if (timelineEnd.getFullYear() !== year) {
-			} 
+			}
 			dateStart = `${year}-01-01T01:00:01Z`;
 			// dateEnd = `${year}-12-30T23:59:59Z`;
-			dateEnd = new Date(year + " " + timelineEnd.getMonth() + " " + timelineEnd.getDate() + " 13:59:59").toISOString();
-			let paramStr = ""
-			paramStr = `${'to: "' + dateEnd + '"'}`
-			paramStr = "";
-			paramStr = `(${'from: "' + dateStart + '"'}, ${'to: "' + dateEnd + '"'})`
-			paramStr = `(${'from: "' + dateStart + '"'})`
-			let body = contributionsQuery(paramStr)
-			console.log(JSON.stringify(body));
-			let contributionsRes = await fetch('https://api.github.com/graphql', {
+			dateEnd = new Date(
+				year + ' ' + timelineEnd.getMonth() + ' ' + timelineEnd.getDate() + ' 13:59:59'
+			).toISOString();
+			let paramStr = '';
+			paramStr = `${'to: "' + dateEnd + '"'}`;
+			paramStr = '';
+			paramStr = `(${'from: "' + dateStart + '"'}, ${'to: "' + dateEnd + '"'})`;
+			paramStr = `(${'from: "' + dateStart + '"'})`;
+			let body = contributionsQuery(paramStr);
+			let contributionsRes = (await fetch('https://api.github.com/graphql', {
 				method: 'POST',
 				body: JSON.stringify(body),
 				headers: {
 					authorization: 'Bearer ' + auth.token
 				}
-			}) as GraphQlQueryResponseData;
+			}));
+
+			const contributions = (await contributionsRes.json() as GraphQlQueryResponseData).data.user.contributionsCollection;
+			for (const repo of [...contributions.commitContributionsByRepository, ...contributions.issueContributionsByRepository, ...contributions.pullRequestContributionsByRepository, ...contributions.pullRequestReviewContributionsByRepository]) {
+				for (const contribution of repo.contributions.nodes) {
+					const contriDate = new Date(contribution.occurredAt);
+					const years = (contriDate.getFullYear() - timelineBegin.getFullYear()) * 365;
+					const contriIndex = years + (dayOfYear(contriDate) - dayOfYear(timelineBegin)) - 1;
+					allDays[contriIndex] += contribution.commitCount ?? 1;
+				}
+			}
+			for (const repo of contributions.repositoryContributions.nodes) {
+					const contriDate = new Date(repo.occurredAt);
+					const years = (contriDate.getFullYear() - timelineBegin.getFullYear()) * 365;
+					const contriIndex = years + (dayOfYear(contriDate) - dayOfYear(timelineBegin)) - 1;
+					allDays[contriIndex] += 1;
+			}
 		}
+		console.log(allDays);
 	});
 </script>
 
