@@ -1,36 +1,281 @@
 <script lang="ts">
-import { onMount } from "svelte";
+	import type {
+		AuthenticationStore,
+		CommitsResponse,
+		ReposResponse,
+		UserResponse
+	} from '$lib/types';
 
+	import { onMount } from 'svelte';
+	import { authStore } from '../../stores';
+
+	export let user: UserResponse;
+	let auth: AuthenticationStore;
+	authStore.subscribe((value) => (auth = value));
 
 	let timelineBegin = new Date('2020-08-26T19:29:09Z');
 	let timelineEnd = new Date();
 
-	const daysOfAccount = (start: Date, end: Date) =>
-		(end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24);
+	const daysBetween = (start: Date, end: Date) =>
+		Math.floor((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
 	const dayOfYear = (date: Date) =>
 		Math.floor(
 			1 + (date.getTime() - new Date(String(date.getFullYear())).getTime()) / (1000 * 60 * 60 * 24)
 		);
-	const fullYearsInRange = (start: Date, end: Date) => {
-		let max = end.getFullYear();
-		let min = start.getFullYear() + 1;
+	const fullYearsInRange = () => {
+		let max = timelineEnd.getFullYear();
+		let min = timelineBegin.getFullYear() + 1;
 		let years = [];
 		for (let i = min; i <= max; i++) {
 			years.push(i);
 		}
 		return years;
 	};
-	onMount(() => {
-	  const years = document.getElementsByClassName("timeline-overlay-year");
-	  const length = daysOfAccount(timelineBegin, timelineEnd);
-	  const yearLength = 365;
-	  const beforeFirst = dayOfYear(timelineBegin);
-	  for (let i = 0; i < years.length; i++) {
-	    let year = years[i];
-	    (year as HTMLElement).style.left = `${(beforeFirst + (i*yearLength))/length*100}%`
-	  }
-	  const widthOfDay = 1/length;
-	})
+	const dateToIndex = (dateStr: string) => {
+		const date = new Date(dateStr);
+		return daysBetween(timelineBegin, date);
+	};
+
+	onMount(async () => {
+		const years = document.getElementsByClassName('timeline-overlay-year');
+		const length = daysBetween(timelineBegin, timelineEnd);
+		const yearLength = 365;
+		const beforeFirst = dayOfYear(timelineBegin);
+		for (let i = 0; i < years.length; i++) {
+			let year = years[i];
+			(year as HTMLElement).style.left = `${((beforeFirst + i * yearLength) / length) * 100}%`;
+		}
+		const widthOfDay = 1 / length;
+
+		let body = {
+			query: `query {
+				user(login: "${user.login}"){
+					contributionsCollection(from: "${user.created_at}", to: "${new Date("2020-12-31T23:59:59Z").toISOString()}"){
+						contributionCalendar{
+							colors
+							totalContributions
+							weeks{
+								contributionDays{
+									color
+									date
+									weekday
+									contributionCount
+								}
+								firstDay
+							}
+						}
+						commitContributionsByRepository(maxRepositories: 50){
+							contributions(last: 100){
+								nodes{
+									commitCount
+									occurredAt
+									resourcePath
+								}
+								totalCount
+							}
+							repository {
+								name
+								owner {
+									login
+									resourcePath
+								}
+								description
+								forkCount
+								homepageUrl
+								isArchived
+								isFork
+								isPrivate
+								collaborators{
+									nodes{
+										login
+										resourcePath
+									}
+									totalCount
+								}
+								pushedAt
+								resourcePath
+							}
+							resourcePath
+						}
+						issueContributionsByRepository{
+							contributions(last: 100){
+								nodes{
+									occurredAt
+									resourcePath
+								}
+								totalCount
+							}
+							repository {
+								name
+								owner {
+									login
+									resourcePath
+								}
+							}
+						}
+						pullRequestContributionsByRepository{
+							contributions(last: 100){
+								nodes{
+									occurredAt
+									resourcePath
+								}
+								totalCount
+							}
+							repository {
+								name
+								owner {
+									login
+									resourcePath
+								}
+							}
+						}
+						pullRequestReviewContributionsByRepository {
+							contributions(last: 100){
+								nodes{
+									occurredAt
+									resourcePath
+								}
+								totalCount
+							}
+							repository {
+								name
+								owner {
+									login
+									resourcePath
+								}
+							}
+						}
+						repositoryContributions(last: 100){
+							nodes {
+								occurredAt
+								repository{
+									name
+									owner {
+										login
+										resourcePath
+									}
+								}
+								resourcePath
+							}
+						}
+						firstIssueContribution{
+							... on CreatedIssueContribution{
+								issue{
+									author{
+										login
+										resourcePath
+									}
+									createdAt
+									closed
+									closedAt
+								}
+								occurredAt
+								resourcePath
+							}
+							... on RestrictedContribution{
+								occurredAt
+								resourcePath
+							}
+						}
+						firstPullRequestContribution{
+							... on CreatedPullRequestContribution{
+								pullRequest{
+									baseRepository{
+										name
+										owner {
+											login
+											resourcePath
+										}
+									}
+									author{
+										login
+										resourcePath
+									}
+									createdAt
+									closed
+									closedAt
+								}
+								occurredAt
+								resourcePath
+							}
+							... on RestrictedContribution{
+								occurredAt
+								resourcePath
+							}
+						}
+						firstRepositoryContribution{
+							... on CreatedRepositoryContribution{
+								occurredAt
+								repository{
+									name
+									owner {
+										login
+										resourcePath
+									}
+								}
+								resourcePath
+							}
+							... on RestrictedContribution{
+								occurredAt
+								resourcePath
+							}
+						}
+						popularIssueContribution{
+							issue{
+								author{
+									login
+									resourcePath
+								}
+								createdAt
+								closed
+								closedAt
+							}
+							occurredAt
+							resourcePath
+						}
+						popularPullRequestContribution{
+							pullRequest{
+								baseRepository{
+									name
+									owner {
+										login
+										resourcePath
+									}
+								}
+								author{
+									login
+									resourcePath
+								}
+								createdAt
+								closed
+								closedAt
+							}
+							occurredAt
+							resourcePath
+						}
+						totalCommitContributions
+						totalIssueContributions
+						totalPullRequestContributions
+						totalPullRequestReviewContributions
+						totalRepositoriesWithContributedCommits
+						totalRepositoriesWithContributedIssues
+						totalRepositoriesWithContributedPullRequests
+						totalRepositoriesWithContributedPullRequestReviews
+						totalRepositoryContributions
+					}
+				}
+			}
+			`
+		};
+		let contributionsRes = await fetch('https://api.github.com/graphql', {
+			method: 'POST',
+			body: JSON.stringify(body),
+			headers: {
+				authorization: 'Bearer ' + auth.token
+			}
+		});
+		console.log(contributionsRes);
+	});
 </script>
 
 <div class="user-repo-activity box">
@@ -39,7 +284,7 @@ import { onMount } from "svelte";
 			<div class="data-wrapper">
 				<div class="overlay">
 					<div class="years">
-						{#each fullYearsInRange(timelineBegin, timelineEnd) as year}
+						{#each fullYearsInRange() as year}
 							<span class="timeline-overlay-year">{year}</span>
 						{/each}
 					</div>
@@ -56,7 +301,7 @@ import { onMount } from "svelte";
 <style lang="scss">
 	.user-repo-activity {
 		min-height: 100%;
-		min-width: 400px;
+		min-width: 500px;
 
 		.timeline-wrapper {
 			width: 100%;

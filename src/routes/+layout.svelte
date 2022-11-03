@@ -4,7 +4,6 @@
 	import { onMount } from 'svelte';
 
 	import '../app.scss';
-
 	let triedAuth = false;
 
 	onMount(async () => {
@@ -17,7 +16,12 @@
 		let json = await res.json();
 		console.log(json.login);
 		if (json.login) {
-			authStore.set({ valid: true, token: token ?? '', me: json, iat: new Date().getSeconds() });
+			authStore.set({
+				valid: true,
+				token: token ?? '',
+				me: json,
+				iat: new Date().getSeconds()
+			});
 			triedAuth = true;
 			if (window.location.pathname == '/') {
 				window.location.pathname = '/me';

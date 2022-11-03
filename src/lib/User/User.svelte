@@ -17,7 +17,7 @@ import UserRepoActivity from './UserRepoActivity.svelte';
 	<div class="user-inner">
 		<div class="row">
 			<RelatedUsers {user} />
-			<UserRepoActivity />
+			<UserRepoActivity {user} />
 		</div>
 	</div>
 </main>
