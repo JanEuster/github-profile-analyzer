@@ -5,6 +5,7 @@
 		ReposResponse,
 		UserResponse
 	} from '$lib/types';
+import type { GraphQlQueryResponseData } from '@octokit/graphql';
 
 	import { onMount } from 'svelte';
 	import { authStore } from '../../stores';
@@ -16,41 +17,11 @@
 	let timelineBegin = new Date('2020-08-26T19:29:09Z');
 	let timelineEnd = new Date();
 
-	const daysBetween = (start: Date, end: Date) =>
-		Math.floor((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
-	const dayOfYear = (date: Date) =>
-		Math.floor(
-			1 + (date.getTime() - new Date(String(date.getFullYear())).getTime()) / (1000 * 60 * 60 * 24)
-		);
-	const fullYearsInRange = () => {
-		let max = timelineEnd.getFullYear();
-		let min = timelineBegin.getFullYear() + 1;
-		let years = [];
-		for (let i = min; i <= max; i++) {
-			years.push(i);
-		}
-		return years;
-	};
-	const dateToIndex = (dateStr: string) => {
-		const date = new Date(dateStr);
-		return daysBetween(timelineBegin, date);
-	};
-
-	onMount(async () => {
-		const years = document.getElementsByClassName('timeline-overlay-year');
-		const length = daysBetween(timelineBegin, timelineEnd);
-		const yearLength = 365;
-		const beforeFirst = dayOfYear(timelineBegin);
-		for (let i = 0; i < years.length; i++) {
-			let year = years[i];
-			(year as HTMLElement).style.left = `${((beforeFirst + i * yearLength) / length) * 100}%`;
-		}
-		const widthOfDay = 1 / length;
-
-		let body = {
+	const contributionsQuery = (paramStr: string) => {
+		return {
 			query: `query {
 				user(login: "${user.login}"){
-					contributionsCollection(from: "${user.created_at}", to: "${new Date("2020-12-31T23:59:59Z").toISOString()}"){
+					contributionsCollection${paramStr}{
 						contributionCalendar{
 							colors
 							totalContributions
@@ -85,13 +56,6 @@
 								isArchived
 								isFork
 								isPrivate
-								collaborators{
-									nodes{
-										login
-										resourcePath
-									}
-									totalCount
-								}
 								pushedAt
 								resourcePath
 							}
@@ -160,15 +124,6 @@
 						}
 						firstIssueContribution{
 							... on CreatedIssueContribution{
-								issue{
-									author{
-										login
-										resourcePath
-									}
-									createdAt
-									closed
-									closedAt
-								}
 								occurredAt
 								resourcePath
 							}
@@ -267,14 +222,62 @@
 			}
 			`
 		};
-		let contributionsRes = await fetch('https://api.github.com/graphql', {
-			method: 'POST',
-			body: JSON.stringify(body),
-			headers: {
-				authorization: 'Bearer ' + auth.token
-			}
-		});
-		console.log(contributionsRes);
+	}
+
+	const daysBetween = (start: Date, end: Date) =>
+		Math.floor((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+	const dayOfYear = (date: Date) =>
+		Math.floor(
+			1 + (date.getTime() - new Date(String(date.getFullYear())).getTime()) / (1000 * 60 * 60 * 24)
+		);
+	const fullYearsInRange = () => {
+		let max = timelineEnd.getFullYear();
+		let min = timelineBegin.getFullYear() + 1;
+		let years = [];
+		for (let i = min; i <= max; i++) {
+			years.push(i);
+		}
+		return years;
+	};
+	const dateToIndex = (dateStr: string) => {
+		const date = new Date(dateStr);
+		return daysBetween(timelineBegin, date);
+	};
+
+	onMount(async () => {
+		const years = document.getElementsByClassName('timeline-overlay-year');
+		const length = daysBetween(timelineBegin, timelineEnd);
+		const yearLength = 365;
+		const beforeFirst = dayOfYear(timelineBegin);
+		for (let i = 0; i < years.length; i++) {
+			let year = years[i];
+			(year as HTMLElement).style.left = `${((beforeFirst + i * yearLength) / length) * 100}%`;
+		}
+		const widthOfDay = 1 / length;
+
+		for (let year = timelineBegin.getFullYear(); year <= timelineEnd.getFullYear(); year++) {
+			let dateEnd;
+			let dateStart;
+			if (timelineEnd.getFullYear() !== year) {
+			} 
+			dateStart = `${year}-01-01T01:00:01Z`;
+			// dateEnd = `${year}-12-30T23:59:59Z`;
+			dateEnd = new Date(year + " " + timelineEnd.getMonth() + " " + timelineEnd.getDate() + " 13:59:59").toISOString();
+			let paramStr = ""
+			paramStr = `${'to: "' + dateEnd + '"'}`
+			paramStr = "";
+			paramStr = `(${'from: "' + dateStart + '"'}, ${'to: "' + dateEnd + '"'})`
+			paramStr = `(${'from: "' + dateStart + '"'})`
+			let body = contributionsQuery(paramStr)
+			console.log(JSON.stringify(body));
+			let contributionsRes = await fetch('https://api.github.com/graphql', {
+				method: 'POST',
+				body: JSON.stringify(body),
+				headers: {
+					authorization: 'Bearer ' + auth.token
+				}
+			}) as GraphQlQueryResponseData;
+		}
 	});
 </script>
 
