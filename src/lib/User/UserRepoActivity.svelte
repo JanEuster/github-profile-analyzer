@@ -1,21 +1,20 @@
 <script lang="ts">
-	import type {
-		AuthenticationStore,
-		UserResponse
-	} from '$lib/types';
-	import type { GraphQlQueryResponseData } from '@octokit/graphql';
-
 	import { onMount } from 'svelte';
+	import type { GraphQlQueryResponseData } from '@octokit/graphql';
+	import type { AuthenticationStore, UserResponse } from '$lib/types';
 	import { dateToIndex, dayOfYear, daysBetween, fullYearsInRange } from '$lib/utils/date';
 	import { authStore } from '../../stores';
+	import Timeline from './Timeline.svelte';
 
 	export let user: UserResponse;
 	let auth: AuthenticationStore;
 	authStore.subscribe((value) => (auth = value));
 
-	let timelineBegin = new Date('2020-08-26T19:29:09Z');
+	let timelineStart = new Date('2020-08-26T19:29:09Z');
 	let timelineEnd = new Date();
-	let daysOfContribution: number[]; 
+	let daysOfContribution: number[];
+	let firstContributionDataReceived = false;
+	let allContributionDataReceived = false;
 	let contributionData: GraphQlQueryResponseData[] = [];
 
 	const contributionsQuery = (paramStr: string) => {
@@ -225,19 +224,8 @@
 		};
 	};
 
-
 	onMount(async () => {
-		const years = document.getElementsByClassName('timeline-overlay-year');
-		const length = daysBetween(timelineBegin, timelineEnd);
-		const yearLength = 365;
-		const beforeFirst = dayOfYear(timelineBegin);
-		for (let i = 0; i < years.length; i++) {
-			let year = years[i];
-			(year as HTMLElement).style.left = `${((beforeFirst + i * yearLength) / length) * 100}%`;
-		}
-
 		// array of account lifetime to store contributions
-		const daysOfContribution = new Array(yearLength - beforeFirst + yearLength * (fullYearsInRange().length - 1) + dayOfYear(timelineEnd))
 		const beforeFirst = dayOfYear(timelineStart);
 		daysOfContribution = new Array(
 			365 -
@@ -247,61 +235,55 @@
 		);
 		daysOfContribution.fill(0);
 		// iterate of years of contribution and query contribution data for each one
-		for (let year = timelineBegin.getFullYear(); year <= timelineEnd.getFullYear(); year++) {
+		for (let year = timelineStart.getFullYear(); year <= timelineEnd.getFullYear(); year++) {
 			let dateStart;
 			dateStart = `${year}-01-01T01:00:01Z`;
 			let paramStr = `(${'from: "' + dateStart + '"'})`;
 			let body = contributionsQuery(paramStr);
-			let contributionsRes = (await fetch('https://api.github.com/graphql', {
+			let contributionsRes = await fetch('https://api.github.com/graphql', {
 				method: 'POST',
 				body: JSON.stringify(body),
 				headers: {
 					authorization: 'Bearer ' + auth.token
 				}
-			}));
+			});
 
-			const contributions = (await contributionsRes.json() as GraphQlQueryResponseData).data.user.contributionsCollection;
-			for (const repo of [...contributions.commitContributionsByRepository, ...contributions.issueContributionsByRepository, ...contributions.pullRequestContributionsByRepository, ...contributions.pullRequestReviewContributionsByRepository]) {
+			const contributions = ((await contributionsRes.json()) as GraphQlQueryResponseData).data.user
+				.contributionsCollection;
+			for (const repo of [
+				...contributions.commitContributionsByRepository,
+				...contributions.issueContributionsByRepository,
+				...contributions.pullRequestContributionsByRepository,
+				...contributions.pullRequestReviewContributionsByRepository
+			]) {
 				for (const contribution of repo.contributions.nodes) {
 					const contriDate = new Date(contribution.occurredAt);
-					const years = (contriDate.getFullYear() - timelineBegin.getFullYear()) * 365;
-					const contriIndex = years + (dayOfYear(contriDate) - dayOfYear(timelineBegin)) - 1;
+					const years = (contriDate.getFullYear() - timelineStart.getFullYear()) * 365;
+					const contriIndex = years + (dayOfYear(contriDate) - dayOfYear(timelineStart)) - 1;
 					daysOfContribution[contriIndex] += contribution.commitCount ?? 1;
 				}
 			}
 			for (const repo of contributions.repositoryContributions.nodes) {
-					const contriIndex = dateToIndex(repo.occurredAt);
-					daysOfContribution[contriIndex] += 1;
+				const contriIndex = dateToIndex(timelineStart, repo.occurredAt);
+				daysOfContribution[contriIndex] += 1;
 			}
+			// beginning of year marker
+			// daysOfContribution[(year-timelineStart.getFullYear()) + 365] += 20;
+			// daysOfContribution[(year-timelineStart.getFullYear()) + 366] += 20;
+			// daysOfContribution[(year-timelineStart.getFullYear()) + 367] += 20;
+			// daysOfContribution[(year-timelineStart.getFullYear()) + 368] += 20;
+			// daysOfContribution[(year-timelineStart.getFullYear()) + 369] += 20;
 			contributionData.push(contributions);
-		}
-		console.log(contributionData)
-		const node = document.getElementById("timeline-data");
-		const maxContributions = Math.max(...daysOfContribution);
-		for (const day of daysOfContribution) {
-			const elem = document.createElement("div");
-			elem.style.backgroundColor = "var(--c-green)";
-			elem.style.width = "100%";
-			elem.style.height = `${100*day/maxContributions}%`
-			node?.appendChild(elem)
+
+			firstContributionDataReceived = true;
 		}
 	});
 </script>
 
 <div class="user-repo-activity box">
-	<div class="timeline-wrapper">
-		<div class="timeline box-dark">
-			<div id="timeline-data" class="data-wrapper">
-				<div class="overlay">
-					<div class="years">
-						{#each fullYearsInRange() as year}
-							<span class="timeline-overlay-year">{year}</span>
-						{/each}
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
+	{#if daysOfContribution && firstContributionDataReceived}
+		<Timeline {daysOfContribution} {contributionData} {timelineStart} {timelineEnd} />
+	{/if}
 	<div class="data">
 		<div class="stats" />
 		<div class="repos" />
@@ -312,52 +294,5 @@
 	.user-repo-activity {
 		min-height: 100%;
 		min-width: 500px;
-
-		.timeline-wrapper {
-			width: 100%;
-			height: 102px;
-			border-bottom: var(--border-thin);
-			display: flex;
-			justify-content: center;
-			align-items: center;
-			.timeline {
-				margin: 32px 20px;
-				width: 100%;
-				height: 42px;
-				border-radius: var(--border-r);
-
-				.data-wrapper {
-					margin: 0 10px;
-					width: calc(100% - 20px);
-					height: 100%;
-					background-color: black;
-					position: relative;
-					display: flex;
-					align-items: end;
-
-					.overlay {
-						position: absolute;
-						top: -10px;
-						left: 0;
-						width: 100%;
-						height: 100%;
-
-						.years {
-							position: relative;
-							width: calc(100% + 16px);
-							transform: translateX(-8px);
-							height: 10px;
-							& > * {
-								position: absolute;
-								display: inline-block;
-								font-size: 10px;
-								transform: translateY(-50%);
-								text-align: center;
-							}
-						}
-					}
-				}
-			}
-		}
 	}
 </style>
