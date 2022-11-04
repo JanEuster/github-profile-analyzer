@@ -6,6 +6,7 @@
 	import type { GraphQlQueryResponseData } from '@octokit/graphql';
 
 	import { onMount } from 'svelte';
+	import { dateToIndex, dayOfYear, daysBetween, fullYearsInRange } from '$lib/utils/date';
 	import { authStore } from '../../stores';
 
 	export let user: UserResponse;
@@ -224,25 +225,6 @@
 		};
 	};
 
-	const daysBetween = (start: Date, end: Date) =>
-		Math.floor((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
-	const dayOfYear = (date: Date) =>
-		Math.floor(
-			1 + (date.getTime() - new Date(String(date.getFullYear())).getTime()) / (1000 * 60 * 60 * 24)
-		);
-	const fullYearsInRange = () => {
-		let max = timelineEnd.getFullYear();
-		let min = timelineBegin.getFullYear() + 1;
-		let years = [];
-		for (let i = min; i <= max; i++) {
-			years.push(i);
-		}
-		return years;
-	};
-	const dateToIndex = (dateStr: Date | string) => {
-		const date = new Date(dateStr);
-		return daysBetween(timelineBegin, date);
-	};
 
 	onMount(async () => {
 		const years = document.getElementsByClassName('timeline-overlay-year');
@@ -256,6 +238,13 @@
 
 		// array of account lifetime to store contributions
 		const daysOfContribution = new Array(yearLength - beforeFirst + yearLength * (fullYearsInRange().length - 1) + dayOfYear(timelineEnd))
+		const beforeFirst = dayOfYear(timelineStart);
+		daysOfContribution = new Array(
+			365 -
+				beforeFirst +
+				365 * (fullYearsInRange(timelineStart, timelineEnd).length - 1) +
+				dayOfYear(timelineEnd)
+		);
 		daysOfContribution.fill(0);
 		// iterate of years of contribution and query contribution data for each one
 		for (let year = timelineBegin.getFullYear(); year <= timelineEnd.getFullYear(); year++) {
