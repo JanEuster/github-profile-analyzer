@@ -342,8 +342,6 @@
 			firstContributionDataReceived = true;
 		}
 		allContributionDataReceived = true;
-		console.log(contributionData);
-		console.log(contributionDataPerYear);
 	});
 </script>
 
@@ -354,27 +352,40 @@
 	<div class="data">
 		{#if allContributionDataReceived}
 			<div class="stats">
-				<h3>Repositories</h3>
+				<h4>Contributions</h4>
 				<div class="stats-repo-general">
 					<div class="stat">
-						<span>Created</span>
-						<span>{contributionData.totals.repos.total}</span>
-					</div>
-					<div class="stat">
-						<span>Issues</span>
-						<span>{contributionData.totals.issues.total}</span>
+						<span>Repositories</span>
+						<span class="number">{contributionData.totals.repos.total}</span>
 					</div>
 					<div class="stat">
 						<span>Pull Requests</span>
-						<span>{contributionData.totals.pullRequests.total}</span>
+						<span class="number">{contributionData.totals.pullRequests.total}</span>
+					</div>
+					<div class="stat">
+						<span>Issues</span>
+						<span class="number">{contributionData.totals.issues.total}</span>
 					</div>
 					<div class="stat">
 						<span>Pull Request Reviews</span>
-						<span>{contributionData.totals.pullRequestReviews.total}</span>
+						<span class="number">{contributionData.totals.pullRequestReviews.total}</span>
 					</div>
 				</div>
-				<div />
-				<div />
+				<div class="stats-commits">
+					<hr />
+					<div>
+						<div class="stat-small">
+							<span>Commmits Total</span>
+							<div>
+								<span class="number">
+									{contributionData.totals.commits.total}
+								</span>
+								<div class="bar" style="--width: 100%" />
+							</div>
+						</div>
+					</div>
+					<hr />
+				</div>
 			</div>
 			<div class="repos" />
 		{/if}
@@ -385,5 +396,84 @@
 	.user-repo-activity {
 		min-height: 100%;
 		min-width: 500px;
+		.data {
+			margin: 10px;
+			margin-left: 20px;
+			margin-top: 20px;
+
+			hr {
+				height: 1px;
+				background-color: var(--c-grey);
+			}
+			.stats {
+				.stat,
+				.stat-small {
+					display: flex;
+					justify-content: space-between;
+					.bar {
+						min-width: 80%;
+						height: 10px;
+						margin-left: 16px;
+						margin-right: 10px;
+						position: relative;
+						&::before {
+							border-radius: var(--border-r);
+							content: "";
+							position: absolute;
+							top: 0;
+							left: 0;
+							width: var(--width);
+							height: 100%;
+							background-color: var(--c-green);
+							z-index: 9999999;
+						}
+					}
+					& > div {
+						min-width: 50%;
+						height: 100%;
+						display: flex;
+						justify-content: flex-end;
+						align-items: center;
+					}
+				}
+				.stat {
+					line-height: 14px;
+					span {
+						font-size: 10px;
+					}
+				}
+				.stat-small {
+					line-height: 10px;
+					padding: 0 2px;
+					span {
+						font-size: 8px;
+					}
+				}
+			}
+			.stats-repo-general {
+				margin: 4px 0;
+				display: flex;
+				flex-direction: column;
+				flex-wrap: wrap;
+				width: 110px;
+				gap: 3px 20px;
+				height: 80px;
+				.stat {
+					width: 110px;
+					.number {
+						width: 20%;
+						text-align: right;
+					}
+				}
+			}
+			.stats-commits {
+				width: 290px;
+				& > div {
+					padding: 6px 0;
+					display: flex;
+					flex-direction: column;
+				}
+			}
+		}
 	}
 </style>
