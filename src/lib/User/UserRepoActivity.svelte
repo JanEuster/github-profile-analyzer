@@ -293,11 +293,13 @@
 				...contributions.pullRequestContributionsByRepository,
 				...contributions.pullRequestReviewContributionsByRepository
 			]) {
-				for (const contribution of repo.contributions.nodes) {
-					const contriDate = new Date(contribution.occurredAt);
-					const years = (contriDate.getFullYear() - timelineStart.getFullYear()) * 365;
-					const contriIndex = years + (dayOfYear(contriDate) - dayOfYear(timelineStart)) - 1;
-					daysOfContribution[contriIndex] += contribution.commitCount ?? 1;
+				if (repo.contributions.nodes[0] != null) {
+					for (const contribution of repo.contributions.nodes) {
+						console.log(contribution)
+						const contriDate = new Date(contribution.occurredAt);
+						const years = (contriDate.getFullYear() - timelineStart.getFullYear()) * 365;
+						const contriIndex = years + (dayOfYear(contriDate) - dayOfYear(timelineStart)) - 1;
+						daysOfContribution[contriIndex] += contribution.commitCount ?? 1;
 				}
 			}
 			for (const repo of contributions.repositoryContributions.nodes) {
