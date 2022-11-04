@@ -33,11 +33,21 @@
 							></span
 						>
 						<span
-							><i class="ph-at" /><a href={'mailto:' + user.email} rel="noreferrer" target="_blank"
-								>{user.email}</a
-							></span
+							><i class="ph-at" />
+							{#if user.email}
+								<a href={'mailto:' + user.email} rel="noreferrer" target="_blank">{user.email}</a>
+							{:else}
+								No Public Email
+							{/if}
+						</span>
+						<span
+							><i class="ph-push-pin" />
+							{#if user.location}
+								{user.location}
+							{:else}
+								No Public Location
+							{/if}</span
 						>
-						<span><i class="ph-push-pin" />{user.location}</span>
 						<span
 							><i class="ph-buildings" />
 							{#if user.company}
