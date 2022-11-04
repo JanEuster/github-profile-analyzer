@@ -8,7 +8,7 @@
 		ContributionWeek,
 		UserResponse
 	} from '$lib/types';
-	import { dateInRange, dateToIndex, dayOfYear, daysBetween, fullYearsInRange, months } from '$lib/utils/date';
+	import { dateInRange, dateToIndex, dayOfYear, daysBetween, fullYearsInRange, months, weekdays } from '$lib/utils/date';
 	import { authStore } from '../../stores';
 	import Timeline from './Timeline.svelte';
 
@@ -354,13 +354,14 @@
 			for (const day of week.contributionDays) {
 				let date = new Date(day.date);
 				if (dateInRange(selectedStart, selectedEnd, date)) {
+					weekdayAverages[date.getDay()] += day.contributionCount;
 					monthAverages[date.getMonth()] += day.contributionCount;
 					days += 1
 				}
 			}
 		}
 		monthAverages.forEach((monthTotal) => monthTotal/days);
-		console.log(monthAverages);
+		monthAverages.forEach((weekdayTotal) => weekdayTotal/days);
 
 		allContributionDataReceived = true;
 	});
@@ -417,6 +418,19 @@
 										{monthAverages[i]}
 									</span>
 									<div class="bar" style={`--width: ${100*monthAverages[i]/Math.max(...monthAverages)}%`} />
+								</div>
+							</div>
+						{/each}
+					</div>
+					<div class="averages-weekday">
+						{#each weekdays as day, i}
+							<div class="stat-small">
+								<span>{day}</span>
+								<div>
+									<span class="number">
+										{weekdayAverages[i]}
+									</span>
+									<div class="bar" style={`--width: ${100*weekdayAverages[i]/Math.max(...weekdayAverages)}%`} />
 								</div>
 							</div>
 						{/each}
@@ -512,8 +526,10 @@
 			}
 			.stats-averages {
 				padding: 6px 2px;
+				display: flex;
+				gap: 15px;
 				& > * {
-					width: 155px;
+					width: 135px;
 					.stat-small {
 						padding: 2px 0;
 					}

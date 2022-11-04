@@ -39,3 +39,12 @@ export const months = [
 	'November',
 	'December'
 ];
+export const weekdays = [
+	'Monday',
+	'Tuesday',
+	'Wednesday',
+	'Thursday',
+	'Friday',
+	'Saturday',
+	'Sunday'
+];
