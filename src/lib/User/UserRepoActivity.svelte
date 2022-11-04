@@ -1,8 +1,6 @@
 <script lang="ts">
 	import type {
 		AuthenticationStore,
-		CommitsResponse,
-		ReposResponse,
 		UserResponse
 	} from '$lib/types';
 	import type { GraphQlQueryResponseData } from '@octokit/graphql';
@@ -16,6 +14,8 @@
 
 	let timelineBegin = new Date('2020-08-26T19:29:09Z');
 	let timelineEnd = new Date();
+	let daysOfContribution: number[]; 
+	let contributionData: GraphQlQueryResponseData[] = [];
 
 	const contributionsQuery = (paramStr: string) => {
 		return {
@@ -239,7 +239,7 @@
 		}
 		return years;
 	};
-	const dateToIndex = (dateStr: string) => {
+	const dateToIndex = (dateStr: Date | string) => {
 		const date = new Date(dateStr);
 		return daysBetween(timelineBegin, date);
 	};
@@ -253,12 +253,11 @@
 			let year = years[i];
 			(year as HTMLElement).style.left = `${((beforeFirst + i * yearLength) / length) * 100}%`;
 		}
-		const widthOfDay = 1 / length;
 
 		// array of account lifetime to store contributions
-		const allDays = new Array(yearLength - beforeFirst + yearLength * (fullYearsInRange().length - 1) + dayOfYear(timelineEnd))
-		allDays.fill(0);
-		console.log(allDays);
+		const daysOfContribution = new Array(yearLength - beforeFirst + yearLength * (fullYearsInRange().length - 1) + dayOfYear(timelineEnd))
+		daysOfContribution.fill(0);
+		// iterate of years of contribution and query contribution data for each one
 		for (let year = timelineBegin.getFullYear(); year <= timelineEnd.getFullYear(); year++) {
 			let dateStart;
 			dateStart = `${year}-01-01T01:00:01Z`;
@@ -278,20 +277,19 @@
 					const contriDate = new Date(contribution.occurredAt);
 					const years = (contriDate.getFullYear() - timelineBegin.getFullYear()) * 365;
 					const contriIndex = years + (dayOfYear(contriDate) - dayOfYear(timelineBegin)) - 1;
-					allDays[contriIndex] += contribution.commitCount ?? 1;
+					daysOfContribution[contriIndex] += contribution.commitCount ?? 1;
 				}
 			}
 			for (const repo of contributions.repositoryContributions.nodes) {
-					const contriDate = new Date(repo.occurredAt);
-					const years = (contriDate.getFullYear() - timelineBegin.getFullYear()) * 365;
-					const contriIndex = years + (dayOfYear(contriDate) - dayOfYear(timelineBegin)) - 1;
-					allDays[contriIndex] += 1;
+					const contriIndex = dateToIndex(repo.occurredAt);
+					daysOfContribution[contriIndex] += 1;
 			}
+			contributionData.push(contributions);
 		}
-		console.log(allDays);
+		console.log(contributionData)
 		const node = document.getElementById("timeline-data");
-		const maxContributions = Math.max(...allDays);
-		for (const day of allDays) {
+		const maxContributions = Math.max(...daysOfContribution);
+		for (const day of daysOfContribution) {
 			const elem = document.createElement("div");
 			elem.style.backgroundColor = "var(--c-green)";
 			elem.style.width = "100%";
