@@ -268,11 +268,11 @@
 				daysOfContribution[contriIndex] += 1;
 			}
 			// beginning of year marker
-			// daysOfContribution[(year-timelineStart.getFullYear()) + 365] += 20;
-			// daysOfContribution[(year-timelineStart.getFullYear()) + 366] += 20;
-			// daysOfContribution[(year-timelineStart.getFullYear()) + 367] += 20;
-			// daysOfContribution[(year-timelineStart.getFullYear()) + 368] += 20;
-			// daysOfContribution[(year-timelineStart.getFullYear()) + 369] += 20;
+			daysOfContribution[daysBetween(timelineStart, new Date(String(year))) + 0] = 50;
+			daysOfContribution[daysBetween(timelineStart, new Date(String(year))) + 1] = 50;
+			daysOfContribution[daysBetween(timelineStart, new Date(String(year))) + 2] = 50;
+			daysOfContribution[daysBetween(timelineStart, new Date(String(year))) + 3] = 50;
+			daysOfContribution[daysBetween(timelineStart, new Date(String(year))) + 4] = 50;
 			contributionData.push(contributions);
 
 			firstContributionDataReceived = true;

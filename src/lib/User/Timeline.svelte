@@ -13,44 +13,41 @@
 
 	const setTimelineData = () => {
 		if (daysOfContribution) {
-			setTimeout(() => {
-				let node = document.getElementById('timeline-data');
-				// delete old children
-				let notDay = [];
-				for (const child of node?.children) {
-					console.log(child.className);
-					if (child.className != "timeline-day") {
-						notDay.push(child);
-					}
+			let node = document.getElementById('timeline-data');
+			// delete old children
+			let notDay = [];
+			for (const child of node?.children) {
+				console.log(child.className);
+				if (child.className != 'timeline-day') {
+					notDay.push(child);
 				}
-				node.innerHTML = "";
-				notDay.forEach((elem) => node?.appendChild(elem))
-				
-				node = document.getElementById('timeline-data');
-				// create new ones
-				const maxContributions = Math.max(...daysOfContribution);
-				daysOfContribution.forEach((day, i) => {
-					const elem = document.createElement('div');
-					elem.className = 'timeline-day';
-					elem.setAttribute("name", String(i));
-					elem.style.backgroundColor = 'var(--c-green)';
-					elem.style.width = '100%';
-					elem.style.height = `${(100 * day) / maxContributions}%`;
-					node?.appendChild(elem);
-				})
+			}
+			node.innerHTML = '';
+			notDay.forEach((elem) => node?.appendChild(elem));
 
-			}, 500);
+			node = document.getElementById('timeline-data');
+			// create new ones
+			const maxContributions = Math.max(...daysOfContribution);
+			console.log(maxContributions);
+			daysOfContribution.forEach((day, i) => {
+				const elem = document.createElement('div');
+				elem.className = 'timeline-day';
+				elem.setAttribute('name', String(i) + '-' + String(day));
+				elem.style.backgroundColor = 'var(--c-green)';
+				elem.style.width = '100%';
+				elem.style.height = `${(100 * day) / maxContributions}%`;
+				node?.appendChild(elem);
+			});
 		}
 	};
 
 	const setYears = () => {
 		const years = document.getElementsByClassName('timeline-overlay-year');
-		const length = daysBetween(timelineStart, timelineEnd);
-		const yearLength = 365;
-		const beforeFirst = dayOfYear(timelineStart);
+		const length = daysBetween(timelineStart, timelineEnd) + 1;
+		const beforeFirst = 365 - dayOfYear(timelineStart) + 1;
 		for (let i = 0; i < years.length; i++) {
 			let year = years[i];
-			(year as HTMLElement).style.left = `${((beforeFirst + i * yearLength) / length) * 100}%`;
+			(year as HTMLElement).style.left = `${((beforeFirst + i * 365) / length) * 100}%`;
 		}
 	};
 
@@ -119,14 +116,13 @@
 
 					.years {
 						position: relative;
-						width: calc(100% + 16px);
-						transform: translateX(-8px);
+						width: 100%;
 						height: 10px;
 						& > * {
 							position: absolute;
 							display: inline-block;
 							font-size: 10px;
-							transform: translateY(-50%);
+							transform: translate(-3%, -50%);
 							text-align: center;
 						}
 					}
