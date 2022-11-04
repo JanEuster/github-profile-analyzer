@@ -1,7 +1,13 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import type { GraphQlQueryResponseData } from '@octokit/graphql';
-	import type { AuthenticationStore, UserResponse } from '$lib/types';
+	import type {
+		AuthenticationStore,
+		ContributionData,
+		ContributionsYearTotal,
+		ContributionWeek,
+		UserResponse
+	} from '$lib/types';
 	import { dateToIndex, dayOfYear, daysBetween, fullYearsInRange } from '$lib/utils/date';
 	import { authStore } from '../../stores';
 	import Timeline from './Timeline.svelte';
@@ -15,7 +21,32 @@
 	let daysOfContribution: number[];
 	let firstContributionDataReceived = false;
 	let allContributionDataReceived = false;
-	let contributionData: GraphQlQueryResponseData[] = [];
+	let contributionDataPerYear: GraphQlQueryResponseData[] = [];
+	let contributionData: ContributionData = {
+		totals: {
+			repos: {
+				total: 0,
+				years: [] as ContributionsYearTotal[]
+			},
+			commits: {
+				total: 0,
+				years: [] as ContributionsYearTotal[]
+			},
+			issues: {
+				total: 0,
+				years: [] as ContributionsYearTotal[]
+			},
+			pullRequests: {
+				total: 0,
+				years: [] as ContributionsYearTotal[]
+			},
+			pullRequestReviews: {
+				total: 0,
+				years: [] as ContributionsYearTotal[]
+			}
+		},
+		weeks: [] as ContributionWeek[]
+	};
 
 	const contributionsQuery = (paramStr: string) => {
 		return {
@@ -268,25 +299,85 @@
 				daysOfContribution[contriIndex] += 1;
 			}
 			// beginning of year marker
-			daysOfContribution[daysBetween(timelineStart, new Date(String(year))) + 0] = 50;
-			daysOfContribution[daysBetween(timelineStart, new Date(String(year))) + 1] = 50;
-			daysOfContribution[daysBetween(timelineStart, new Date(String(year))) + 2] = 50;
-			daysOfContribution[daysBetween(timelineStart, new Date(String(year))) + 3] = 50;
-			daysOfContribution[daysBetween(timelineStart, new Date(String(year))) + 4] = 50;
-			contributionData.push(contributions);
+			daysOfContribution[daysBetween(timelineStart, new Date(String(year))) + 0] = 30;
+			// daysOfContribution[daysBetween(timelineStart, new Date(String(year))) + 1] = 50;
+			// daysOfContribution[daysBetween(timelineStart, new Date(String(year))) + 2] = 50;
+			// daysOfContribution[daysBetween(timelineStart, new Date(String(year))) + 3] = 50;
+			// daysOfContribution[daysBetween(timelineStart, new Date(String(year))) + 4] = 50;
+
+			// set contribution data
+			contributionDataPerYear.push(contributions);
+
+			// totals over all years
+			contributionData.totals.repos.total += contributions.totalRepositoryContributions;
+			contributionData.totals.commits.total += contributions.totalCommitContributions;
+			contributionData.totals.issues.total += contributions.totalIssueContributions;
+			contributionData.totals.pullRequests.total += contributions.totalPullRequestContributions;
+			contributionData.totals.pullRequestReviews.total +=
+				contributions.totalPullRequestReviewContributions;
+			// totals of this year
+			contributionData.totals.repos.years.push({
+				year: year,
+				total: contributions.totalRepositoryContributions
+			});
+			contributionData.totals.commits.years.push({
+				year: year,
+				total: contributions.totalCommitContributions
+			});
+			contributionData.totals.issues.years.push({
+				year: year,
+				total: contributions.totalIssueContributions
+			});
+			contributionData.totals.pullRequestReviews.years.push({
+				year: year,
+				total: contributions.totalPullRequestContributions
+			});
+			contributionData.totals.pullRequestReviews.years.push({
+				year: year,
+				total: contributions.totalPullRequestReviewContributions
+			});
+
+			contributionData.weeks.push(...contributions.contributionCalendar.weeks);
 
 			firstContributionDataReceived = true;
 		}
+		allContributionDataReceived = true;
+		console.log(contributionData);
+		console.log(contributionDataPerYear);
 	});
 </script>
 
 <div class="user-repo-activity box">
 	{#if daysOfContribution && firstContributionDataReceived}
-		<Timeline {daysOfContribution} {contributionData} {timelineStart} {timelineEnd} />
+		<Timeline {daysOfContribution} {timelineStart} {timelineEnd} />
 	{/if}
 	<div class="data">
-		<div class="stats" />
-		<div class="repos" />
+		{#if allContributionDataReceived}
+			<div class="stats">
+				<h3>Repositories</h3>
+				<div class="stats-repo-general">
+					<div class="stat">
+						<span>Created</span>
+						<span>{contributionData.totals.repos.total}</span>
+					</div>
+					<div class="stat">
+						<span>Issues</span>
+						<span>{contributionData.totals.issues.total}</span>
+					</div>
+					<div class="stat">
+						<span>Pull Requests</span>
+						<span>{contributionData.totals.pullRequests.total}</span>
+					</div>
+					<div class="stat">
+						<span>Pull Request Reviews</span>
+						<span>{contributionData.totals.pullRequestReviews.total}</span>
+					</div>
+				</div>
+				<div />
+				<div />
+			</div>
+			<div class="repos" />
+		{/if}
 	</div>
 </div>
 

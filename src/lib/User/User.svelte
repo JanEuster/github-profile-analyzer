@@ -3,7 +3,7 @@
 	import { authStore } from '../../stores';
 	import { onMount } from 'svelte';
 	import RelatedUsers from './RelatedUsers.svelte';
-import UserRepoActivity from './UserRepoActivity.svelte';
+	import UserRepoActivity from './UserRepoActivity.svelte';
 
 	export let user: UserResponse;
 	let auth: AuthenticationStore;

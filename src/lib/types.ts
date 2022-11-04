@@ -22,3 +22,32 @@ export type AuthenticationStore = {
 	me: UserResponse;
 	iat: number;
 };
+
+export type ContributionsYearTotal = {
+	year: number;
+	total: number;
+};
+export type ContributionsOfType = {
+	total: number;
+	years: ContributionsYearTotal[];
+};
+export type ContributionDay = {
+	color: string;
+	date: string;
+	weekday: number;
+	contributionCount: number;
+};
+export type ContributionWeek = {
+	firstDay: string;
+	contributionDays: ContributionDay[];
+};
+export type ContributionData = {
+	totals: {
+		commits: ContributionsOfType;
+		issues: ContributionsOfType;
+		pullRequests: ContributionsOfType;
+		pullRequestReviews: ContributionsOfType;
+		repos: ContributionsOfType;
+	};
+	weeks: ContributionWeek[];
+};

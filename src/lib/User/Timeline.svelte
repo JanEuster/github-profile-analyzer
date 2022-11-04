@@ -3,21 +3,18 @@
 	import { onMount } from 'svelte';
 
 	export let daysOfContribution: number[];
-	export let contributionData: Object;
 	export let timelineStart: Date;
 	export let timelineEnd: Date;
 	let isMounted = false;
 	let years: number[] = [];
 
-	console.log(daysOfContribution);
 
 	const setTimelineData = () => {
-		if (daysOfContribution) {
-			let node = document.getElementById('timeline-data');
+		let node = document.getElementById('timeline-data');
+		if (daysOfContribution && node) {
 			// delete old children
 			let notDay = [];
 			for (const child of node?.children) {
-				console.log(child.className);
 				if (child.className != 'timeline-day') {
 					notDay.push(child);
 				}
@@ -28,7 +25,6 @@
 			node = document.getElementById('timeline-data');
 			// create new ones
 			const maxContributions = Math.max(...daysOfContribution);
-			console.log(maxContributions);
 			daysOfContribution.forEach((day, i) => {
 				const elem = document.createElement('div');
 				elem.className = 'timeline-day';
@@ -53,7 +49,6 @@
 
 	// executes when prop daysOfContribution changes
 	$: {
-		console.log(isMounted, daysOfContribution);
 		if (isMounted) {
 			setTimelineData();
 			setYears();
