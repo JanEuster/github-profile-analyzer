@@ -17,3 +17,25 @@ export const dateToIndex = (start: Date, dateStr: Date | string) => {
 	const date = new Date(dateStr);
 	return daysBetween(start, date);
 };
+
+export const dateInRange = (start: Date, end: Date, value: Date): boolean => {
+	if (daysBetween(start, value) > 0 && daysBetween(value, end) > 0) {
+		return true;
+	}
+	return false;
+};
+
+export const months = [
+	'January',
+	'Febuary',
+	'March',
+	'April',
+	'May',
+	'June',
+	'Juli',
+	'August',
+	'Semptember',
+	'October',
+	'November',
+	'December'
+];

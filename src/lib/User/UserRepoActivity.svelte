@@ -8,7 +8,7 @@
 		ContributionWeek,
 		UserResponse
 	} from '$lib/types';
-	import { dateToIndex, dayOfYear, daysBetween, fullYearsInRange } from '$lib/utils/date';
+	import { dateInRange, dateToIndex, dayOfYear, daysBetween, fullYearsInRange, months } from '$lib/utils/date';
 	import { authStore } from '../../stores';
 	import Timeline from './Timeline.svelte';
 
@@ -18,6 +18,12 @@
 
 	let timelineStart = new Date('2020-08-26T19:29:09Z');
 	let timelineEnd = new Date();
+	let selectedStart = timelineStart;
+	let selectedEnd = timelineEnd;
+
+	let monthAverages: number[] = new Array(12).fill(0);
+	let weekdayAverages: number[] = new Array(7).fill(0);
+
 	let daysOfContribution: number[];
 	let firstContributionDataReceived = false;
 	let allContributionDataReceived = false;
@@ -341,6 +347,21 @@
 
 			firstContributionDataReceived = true;
 		}
+
+		// get month averages
+		let days = 0;
+		for (const week of contributionData.weeks) {
+			for (const day of week.contributionDays) {
+				let date = new Date(day.date);
+				if (dateInRange(selectedStart, selectedEnd, date)) {
+					monthAverages[date.getMonth()] += day.contributionCount;
+					days += 1
+				}
+			}
+		}
+		monthAverages.forEach((monthTotal) => monthTotal/days);
+		console.log(monthAverages);
+
 		allContributionDataReceived = true;
 	});
 </script>
@@ -386,6 +407,21 @@
 					</div>
 					<hr />
 				</div>
+				<div class="stats-averages">
+					<div class="averages-month">
+						{#each months as month, i}
+							<div class="stat-small">
+								<span>{month}</span>
+								<div>
+									<span class="number">
+										{monthAverages[i]}
+									</span>
+									<div class="bar" style={`--width: ${100*monthAverages[i]/Math.max(...monthAverages)}%`} />
+								</div>
+							</div>
+						{/each}
+					</div>
+				</div>
 			</div>
 			<div class="repos" />
 		{/if}
@@ -413,12 +449,12 @@
 					.bar {
 						min-width: 80%;
 						height: 10px;
-						margin-left: 16px;
-						margin-right: 10px;
+						margin-left: 9%;
+						margin-right: 5%;
 						position: relative;
 						&::before {
 							border-radius: var(--border-r);
-							content: "";
+							content: '';
 							position: absolute;
 							top: 0;
 							left: 0;
@@ -472,6 +508,15 @@
 					padding: 6px 0;
 					display: flex;
 					flex-direction: column;
+				}
+			}
+			.stats-averages {
+				padding: 6px 2px;
+				& > * {
+					width: 155px;
+					.stat-small {
+						padding: 2px 0;
+					}
 				}
 			}
 		}
