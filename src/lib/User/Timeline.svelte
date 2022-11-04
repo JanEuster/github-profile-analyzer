@@ -9,9 +9,9 @@
 	let years: number[] = [];
 
 
-	const setTimelineData = () => {
+	const setTimelineData = (dOC: number[]) => {
 		let node = document.getElementById('timeline-data');
-		if (daysOfContribution && node) {
+		if (dOC && node) {
 			// delete old children
 			let notDay = [];
 			for (const child of node?.children) {
@@ -24,8 +24,8 @@
 
 			node = document.getElementById('timeline-data');
 			// create new ones
-			const maxContributions = Math.max(...daysOfContribution);
-			daysOfContribution.forEach((day, i) => {
+			const maxContributions = Math.max(...dOC);
+			dOC.forEach((day, i) => {
 				const elem = document.createElement('div');
 				elem.className = 'timeline-day';
 				elem.setAttribute('name', String(i) + '-' + String(day));
@@ -50,13 +50,9 @@
 	// executes when prop daysOfContribution changes
 	$: {
 		if (isMounted) {
-			setTimelineData();
+			setTimelineData(daysOfContribution);
 			setYears();
-		} else {
-			setTimeout(() => {
-				setTimelineData();
-			}, 200);
-		}
+		} 
 		years = fullYearsInRange(timelineStart, timelineEnd);
 	}
 	onMount(() => {
