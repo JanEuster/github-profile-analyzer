@@ -8,7 +8,15 @@
 		ContributionWeek,
 		UserResponse
 	} from '$lib/types';
-	import { dateInRange, dateToIndex, dayOfYear, daysBetween, fullYearsInRange, months, weekdays } from '$lib/utils/date';
+	import {
+		dateInRange,
+		dateToIndex,
+		dayOfYear,
+		daysBetween,
+		fullYearsInRange,
+		months,
+		weekdays
+	} from '$lib/utils/date';
 	import { authStore } from '../../stores';
 	import Timeline from './Timeline.svelte';
 
@@ -295,28 +303,29 @@
 			]) {
 				if (repo.contributions.nodes[0] != null) {
 					for (const contribution of repo.contributions.nodes) {
-						console.log(contribution)
 						const contriDate = new Date(contribution.occurredAt);
 						const years = (contriDate.getFullYear() - timelineStart.getFullYear()) * 365;
 						const contriIndex = years + (dayOfYear(contriDate) - dayOfYear(timelineStart)) - 1;
 						daysOfContribution[contriIndex] += contribution.commitCount ?? 1;
+					}
 				}
-			}
-			for (const repo of contributions.repositoryContributions.nodes) {
-				const contriIndex = dateToIndex(timelineStart, repo.occurredAt);
-				daysOfContribution[contriIndex] += 1;
-			}
-			// beginning of year marker
-			daysOfContribution[daysBetween(timelineStart, new Date(String(year))) + 0] = 30;
-			// daysOfContribution[daysBetween(timelineStart, new Date(String(year))) + 1] = 50;
-			// daysOfContribution[daysBetween(timelineStart, new Date(String(year))) + 2] = 50;
-			// daysOfContribution[daysBetween(timelineStart, new Date(String(year))) + 3] = 50;
-			// daysOfContribution[daysBetween(timelineStart, new Date(String(year))) + 4] = 50;
+				for (const repo of contributions.repositoryContributions.nodes) {
+					const contriIndex = dateToIndex(timelineStart, repo.occurredAt);
+					daysOfContribution[contriIndex] += 1;
+				}
+				// beginning of year marker
+				daysOfContribution[daysBetween(timelineStart, new Date(String(year))) + 0] = 30;
+				// daysOfContribution[daysBetween(timelineStart, new Date(String(year))) + 1] = 50;
+				// daysOfContribution[daysBetween(timelineStart, new Date(String(year))) + 2] = 50;
+				// daysOfContribution[daysBetween(timelineStart, new Date(String(year))) + 3] = 50;
+				// daysOfContribution[daysBetween(timelineStart, new Date(String(year))) + 4] = 50;
 
-			// set contribution data
-			contributionDataPerYear.push(contributions);
+				// set contribution data
+				contributionDataPerYear.push(contributions);
+			}
 
 			// totals over all years
+			console.log(contributions.totalCommitContributions);
 			contributionData.totals.repos.total += contributions.totalRepositoryContributions;
 			contributionData.totals.commits.total += contributions.totalCommitContributions;
 			contributionData.totals.issues.total += contributions.totalIssueContributions;
@@ -350,7 +359,7 @@
 			firstContributionDataReceived = true;
 		}
 
-		// get month averages
+		// get month & weekday averages
 		let days = 0;
 		for (const week of contributionData.weeks) {
 			for (const day of week.contributionDays) {
@@ -358,12 +367,16 @@
 				if (dateInRange(selectedStart, selectedEnd, date)) {
 					weekdayAverages[date.getDay()] += day.contributionCount;
 					monthAverages[date.getMonth()] += day.contributionCount;
-					days += 1
+					days += 1;
 				}
 			}
 		}
-		monthAverages.forEach((monthTotal) => monthTotal/days);
-		monthAverages.forEach((weekdayTotal) => weekdayTotal/days);
+		monthAverages.forEach(
+			(monthTotal, i) => (monthAverages[i] = Math.round(((10 * monthTotal) / days) * 12) / 10)
+		);
+		weekdayAverages.forEach(
+			(weekdayTotal, i) => (weekdayAverages[i] = Math.round(((10 * weekdayTotal) / days) * 7) / 10)
+		);
 
 		allContributionDataReceived = true;
 	});
@@ -399,7 +412,7 @@
 					<hr />
 					<div>
 						<div class="stat-small">
-							<span>Commmits Total</span>
+							<span>Commits Total</span>
 							<div>
 								<span class="number">
 									{contributionData.totals.commits.total}
@@ -412,6 +425,7 @@
 				</div>
 				<div class="stats-averages">
 					<div class="averages-month">
+						<h5>Month Average</h5>
 						{#each months as month, i}
 							<div class="stat-small">
 								<span>{month}</span>
@@ -419,12 +433,16 @@
 									<span class="number">
 										{monthAverages[i]}
 									</span>
-									<div class="bar" style={`--width: ${100*monthAverages[i]/Math.max(...monthAverages)}%`} />
+									<div
+										class="bar"
+										style={`--width: ${(100 * monthAverages[i]) / Math.max(...monthAverages)}%`}
+									/>
 								</div>
 							</div>
 						{/each}
 					</div>
 					<div class="averages-weekday">
+						<h5>Weekday Average</h5>
 						{#each weekdays as day, i}
 							<div class="stat-small">
 								<span>{day}</span>
@@ -432,7 +450,10 @@
 									<span class="number">
 										{weekdayAverages[i]}
 									</span>
-									<div class="bar" style={`--width: ${100*weekdayAverages[i]/Math.max(...weekdayAverages)}%`} />
+									<div
+										class="bar"
+										style={`--width: ${(100 * weekdayAverages[i]) / Math.max(...weekdayAverages)}%`}
+									/>
 								</div>
 							</div>
 						{/each}
@@ -477,7 +498,6 @@
 							width: var(--width);
 							height: 100%;
 							background-color: var(--c-green);
-							z-index: 9999999;
 						}
 					}
 					& > div {
@@ -532,6 +552,9 @@
 				gap: 15px;
 				& > * {
 					width: 135px;
+					h5 {
+						margin-bottom: 4px;
+					}
 					.stat-small {
 						padding: 2px 0;
 					}
