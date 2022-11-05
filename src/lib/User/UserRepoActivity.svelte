@@ -296,8 +296,20 @@
 
 			const contributions = ((await contributionsRes.json()) as GraphQlQueryResponseData).data.user
 				.contributionsCollection;
+			for (const repo of contributions.commitContributionsByRepository) {
+				if (repo.contributions.nodes[0] != null) {
+					for (const contribution of repo.contributions.nodes) {
+						const contriDate = new Date(contribution.occurredAt);
+						const years = (contriDate.getFullYear() - timelineStart.getFullYear()) * 365;
+						const contriIndex = years + (dayOfYear(contriDate) - dayOfYear(timelineStart)) - 1;
+						if (daysOfContribution[contriIndex] > 0) {
+							console.log(contriIndex, contribution);
+						}
+						daysOfContribution[contriIndex] += contribution.commitCount ?? 1;
+					}
+				}
+			}
 			for (const repo of [
-				...contributions.commitContributionsByRepository,
 				...contributions.issueContributionsByRepository,
 				...contributions.pullRequestContributionsByRepository,
 				...contributions.pullRequestReviewContributionsByRepository
@@ -307,7 +319,7 @@
 						const contriDate = new Date(contribution.occurredAt);
 						const years = (contriDate.getFullYear() - timelineStart.getFullYear()) * 365;
 						const contriIndex = years + (dayOfYear(contriDate) - dayOfYear(timelineStart)) - 1;
-						daysOfContribution[contriIndex] += contribution.commitCount ?? 1;
+						daysOfContribution[contriIndex] += 1;
 					}
 				}
 				for (const repo of contributions.repositoryContributions.nodes) {
@@ -315,7 +327,7 @@
 					daysOfContribution[contriIndex] += 1;
 				}
 				// beginning of year marker
-				daysOfContribution[daysBetween(timelineStart, new Date(String(year))) + 0] = 30;
+				// daysOfContribution[daysBetween(timelineStart, new Date(String(year))) + 0] = 30;
 				// daysOfContribution[daysBetween(timelineStart, new Date(String(year))) + 1] = 50;
 				// daysOfContribution[daysBetween(timelineStart, new Date(String(year))) + 2] = 50;
 				// daysOfContribution[daysBetween(timelineStart, new Date(String(year))) + 3] = 50;
@@ -388,20 +400,16 @@
 	});
 
 	const getWidthStr = (part: number, total: number): string => {
-		const width = Math.round(100 * part / total);
+		const width = Math.round((100 * part) / total);
 		const widthStr = `--width: ${width}%`;
 		let color = 'var(--c-green)';
 		if (width <= 25) {
-		console.log("20", width)
 			color = 'var(--c-green-20)';
 		} else if (width <= 45) {
-		console.log("40", width)
 			color = 'var(--c-green-40)';
 		} else if (width <= 65) {
-		console.log("60", width)
 			color = 'var(--c-green-60)';
 		} else if (width <= 90) {
-		console.log("80", width)
 			color = 'var(--c-green-80)';
 		}
 		const colorStr = `--bar-color: ${color}`;
