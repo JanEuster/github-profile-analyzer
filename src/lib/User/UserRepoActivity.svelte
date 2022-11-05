@@ -386,6 +386,27 @@
 
 		allContributionDataReceived = true;
 	});
+
+	const getWidthStr = (part: number, total: number): string => {
+		const width = Math.round(100 * part / total);
+		const widthStr = `--width: ${width}%`;
+		let color = 'var(--c-green)';
+		if (width <= 25) {
+		console.log("20", width)
+			color = 'var(--c-green-20)';
+		} else if (width <= 45) {
+		console.log("40", width)
+			color = 'var(--c-green-40)';
+		} else if (width <= 65) {
+		console.log("60", width)
+			color = 'var(--c-green-60)';
+		} else if (width <= 90) {
+		console.log("80", width)
+			color = 'var(--c-green-80)';
+		}
+		const colorStr = `--bar-color: ${color}`;
+		return `${widthStr}; ${colorStr};`;
+	};
 </script>
 
 <div class="user-repo-activity box">
@@ -424,7 +445,7 @@
 									<span class="number">
 										{contributionData.totals.total}
 									</span>
-									<div class="bar" style={`--width: 100%`} />
+									<div class="bar" style={getWidthStr(1, 1)} />
 								</div>
 							</div>
 							<div class="stat-small">
@@ -436,12 +457,11 @@
 									</span>
 									<div
 										class="bar"
-										style={`--width: ${
-											(100 *
-												contributionDataPerYear[contributionDataPerYear.length - 1]
-													.contributionCalendar.totalContributions) /
+										style={getWidthStr(
+											contributionDataPerYear[contributionDataPerYear.length - 1]
+												.contributionCalendar.totalContributions,
 											contributionData.totals.total
-										}%`}
+										)}
 									/>
 								</div>
 							</div>
@@ -453,7 +473,7 @@
 									<span class="number">
 										{contributionData.totals.commits.total}
 									</span>
-									<div class="bar" style={`--width: 100%`} />
+									<div class="bar" style={getWidthStr(1, 1)} />
 								</div>
 							</div>
 							<div class="stat-small">
@@ -465,12 +485,11 @@
 									</span>
 									<div
 										class="bar"
-										style={`--width: ${
-											(100 *
-												contributionDataPerYear[contributionDataPerYear.length - 1]
-													.totalCommitContributions) /
+										style={getWidthStr(
+											contributionDataPerYear[contributionDataPerYear.length - 1]
+												.totalCommitContributions,
 											contributionData.totals.commits.total
-										}%`}
+										)}
 									/>
 								</div>
 							</div>
@@ -490,7 +509,7 @@
 									</span>
 									<div
 										class="bar"
-										style={`--width: ${(100 * monthAverages[i]) / Math.max(...monthAverages)}%`}
+										style={getWidthStr(monthAverages[i], Math.max(...monthAverages))}
 									/>
 								</div>
 							</div>
@@ -507,7 +526,7 @@
 									</span>
 									<div
 										class="bar"
-										style={`--width: ${(100 * weekdayAverages[i]) / Math.max(...weekdayAverages)}%`}
+										style={getWidthStr(weekdayAverages[i], Math.max(...weekdayAverages))}
 									/>
 								</div>
 							</div>
@@ -552,7 +571,7 @@
 							left: 0;
 							width: var(--width);
 							height: 100%;
-							background-color: var(--c-green);
+							background-color: var(--bar-color);
 						}
 					}
 					& > div {
