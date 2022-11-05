@@ -43,6 +43,7 @@ export type ContributionWeek = {
 };
 export type ContributionData = {
 	totals: {
+		total: number;
 		commits: ContributionsOfType;
 		issues: ContributionsOfType;
 		pullRequests: ContributionsOfType;

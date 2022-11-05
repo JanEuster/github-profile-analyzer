@@ -38,6 +38,7 @@
 	let contributionDataPerYear: GraphQlQueryResponseData[] = [];
 	let contributionData: ContributionData = {
 		totals: {
+			total: 0,
 			repos: {
 				total: 0,
 				years: [] as ContributionsYearTotal[]
@@ -325,7 +326,6 @@
 			}
 
 			// totals over all years
-			console.log(contributions.totalCommitContributions);
 			contributionData.totals.repos.total += contributions.totalRepositoryContributions;
 			contributionData.totals.commits.total += contributions.totalCommitContributions;
 			contributionData.totals.issues.total += contributions.totalIssueContributions;
@@ -358,6 +358,12 @@
 
 			firstContributionDataReceived = true;
 		}
+		contributionData.totals.total =
+			contributionData.totals.repos.total +
+			contributionData.totals.commits.total +
+			contributionData.totals.issues.total +
+			contributionData.totals.pullRequests.total +
+			contributionData.totals.pullRequestReviews.total;
 
 		// get month & weekday averages
 		let days = 0;
@@ -411,13 +417,62 @@
 				<div class="stats-commits">
 					<hr />
 					<div>
-						<div class="stat-small">
-							<span>Commits Total</span>
-							<div>
-								<span class="number">
-									{contributionData.totals.commits.total}
-								</span>
-								<div class="bar" style="--width: 100%" />
+						<div class="stat-group">
+							<div class="stat-small">
+								<span>Total Contributions</span>
+								<div>
+									<span class="number">
+										{contributionData.totals.total}
+									</span>
+									<div class="bar" style={`--width: 100%`} />
+								</div>
+							</div>
+							<div class="stat-small">
+								<span>Contributions This Year</span>
+								<div>
+									<span class="number">
+										{contributionDataPerYear[contributionDataPerYear.length - 1]
+											.contributionCalendar.totalContributions}
+									</span>
+									<div
+										class="bar"
+										style={`--width: ${
+											(100 *
+												contributionDataPerYear[contributionDataPerYear.length - 1]
+													.contributionCalendar.totalContributions) /
+											contributionData.totals.total
+										}%`}
+									/>
+								</div>
+							</div>
+						</div>
+						<div class="stat-group">
+							<div class="stat-small">
+								<span>Total Commits</span>
+								<div>
+									<span class="number">
+										{contributionData.totals.commits.total}
+									</span>
+									<div class="bar" style={`--width: 100%`} />
+								</div>
+							</div>
+							<div class="stat-small">
+								<span>Commits This Year</span>
+								<div>
+									<span class="number">
+										{contributionDataPerYear[contributionDataPerYear.length - 1]
+											.totalCommitContributions}
+									</span>
+									<div
+										class="bar"
+										style={`--width: ${
+											(100 *
+												contributionDataPerYear[contributionDataPerYear.length - 1]
+													.totalCommitContributions) /
+											contributionData.totals.commits.total
+										}%`}
+									/>
+								</div>
 							</div>
 						</div>
 					</div>
@@ -541,9 +596,12 @@
 			.stats-commits {
 				width: 290px;
 				& > div {
-					padding: 6px 0;
+					padding: 4px 0;
 					display: flex;
 					flex-direction: column;
+				}
+				.stat-small {
+					margin: 2px 0;
 				}
 			}
 			.stats-averages {
