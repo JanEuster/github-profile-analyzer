@@ -1,4 +1,5 @@
 <script lang="ts">
+	import BigLink from './common/BigLink.svelte';
 	import type { UserResponse } from './types';
 
 	export let user: UserResponse | undefined;
@@ -24,7 +25,7 @@
 			<div class="user-info">
 				<img class="profile-picture" src={user.avatar_url} alt="profile avatar" />
 				<div class="info">
-					<h2>{user.login}</h2>
+					<h2><BigLink url={user.html_url} text={user.login} /></h2>
 					<h3>{user.name}</h3>
 					<div class="more">
 						<span
