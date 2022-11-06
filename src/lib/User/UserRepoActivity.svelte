@@ -383,7 +383,7 @@
 				{selectedStart}
 				{selectedEnd}
 			/>
-			<div class="repos" />
+			<ContributionRepos {contributionData}/>
 		{/if}
 	</div>
 </div>
@@ -396,6 +396,7 @@
 			margin: 10px;
 			margin-left: 20px;
 			margin-top: 20px;
+			display: flex;
 		}
 	}
 </style>
