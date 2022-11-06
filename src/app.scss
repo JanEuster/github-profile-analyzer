@@ -31,6 +31,9 @@
 	color: var(--c-background);
 	background-color: var(--c-green);
 }
+*::-webkit-scrollbar {
+	display: none;
+}
 
 body {
 	font-weight: 400;
@@ -55,6 +58,11 @@ h5 {
 	font-style: italic;
 	font-weight: 400;
 }
+h6 {
+	font-weight: 400;
+	font-size: 12px;
+	line-height: 14px;
+}
 
 a {
 	color: var(--c-text);
@@ -67,7 +75,8 @@ a {
 }
 
 button,
-input {
+input,
+select {
 	padding: 3px;
 	background: var(--c-dark);
 	border: var(--border-thin);
@@ -91,6 +100,15 @@ input {
 }
 button {
 	cursor: pointer;
+}
+
+select {
+	height: 20px;
+	font-size: 10px;
+	color: var(--c-text-muted);
+	:hover {
+		color: var(--c-text);
+	}
 }
 .square {
 	aspect-ratio: 1;

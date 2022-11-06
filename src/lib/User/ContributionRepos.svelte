@@ -5,6 +5,10 @@
 </script>
 
 <div class="repos-wrapper">
+	<div class="title-line">
+		<h4>Repositories by</h4>
+		<select><option>Conttributions</option></select>
+	</div>
 	<div class="repos box-dark">
 		<div class="repo box">
 			<div class="repo-left">
@@ -25,7 +29,7 @@
 					<i class="ph-star ph-sm" />
 					<div>
 						<span class="number">6</span>
-						<span class="text">Star</span>
+						<span class="text">Stars</span>
 					</div>
 				</div>
 				<div class="stat">
@@ -45,7 +49,14 @@
 		margin-left: 30px;
 		width: 370px;
 		min-width: 250px;
+		.title-line {
+			display: flex;
+			margin-left: 7px;
+			align-items: center;
+			gap: 5px;
+		}
 		.repos {
+			margin-top: 6px;
 			width: 100%;
 			height: 370px;
 
