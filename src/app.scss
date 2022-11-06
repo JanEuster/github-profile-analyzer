@@ -103,10 +103,11 @@ button {
 }
 
 select {
-	height: 20px;
+	height: 23px;
 	font-size: 10px;
 	color: var(--c-text-muted);
-	:hover {
+	&:hover,
+	&:focus {
 		color: var(--c-text);
 	}
 }

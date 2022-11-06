@@ -263,6 +263,39 @@
 		};
 	};
 
+	// fill list of repos that where contributed to
+	// if its not already in the array
+	const getRepoDetails = (repo: GraphQlQueryResponseData, isCommitData: boolean) => {
+		let dupIndex = -1;
+		for (let i = 0; i < contributionData.repositories.length; i++) {
+			const listedRepo = contributionData.repositories[i];
+			if (
+				repo.repository.name == listedRepo.name &&
+				repo.repository.owner.login == listedRepo.owner
+			) {
+				dupIndex = i;
+				break;
+			}
+		}
+		if (dupIndex > -1) {
+			contributionData.repositories[dupIndex].total += repo.contributions.totalCount;
+		} else {
+			contributionData.repositories.push({
+				total: repo.contributions.totalCount,
+				url: repo.repository.resourcePath,
+				name: repo.repository.name,
+				owner: repo.repository.owner.login,
+				homepage: repo.repository.homepageUrl,
+				isForked: repo.repository.isForked,
+				isPrivate: repo.repository.isPrivate,
+				isArchived: repo.repository.isArchived,
+				forkCount: repo.repository.forkCount,
+				description: repo.repository.description,
+				lastUpdated: repo.repository.pushedAt
+			});
+		}
+	};
+
 	onMount(async () => {
 		// array of account lifetime to store contributions
 		const beforeFirst = dayOfYear(timelineStart);
@@ -290,6 +323,7 @@
 			const contributions = ((await contributionsRes.json()) as GraphQlQueryResponseData).data.user
 				.contributionsCollection;
 			for (const repo of contributions.commitContributionsByRepository) {
+				console.log(repo.repository.forkCount)
 				if (repo.contributions.nodes[0] != null) {
 					for (const contribution of repo.contributions.nodes) {
 						const contriDate = new Date(contribution.occurredAt);
@@ -298,36 +332,7 @@
 						daysOfContribution[contriIndex] += contribution.commitCount ?? 1;
 					}
 				}
-				// fill list of repos that where contributed to
-				// if its not already in the array
-				let dupIndex = -1;
-				for (let i = 0; i < contributionData.repositories.length; i++) {
-					const listedRepo = contributionData.repositories[i];
-					if (
-						repo.repository.name == listedRepo.name &&
-						repo.repository.owner.login == listedRepo.owner
-					) {
-						dupIndex = i;
-						break;
-					}
-				}
-				if (dupIndex > -1) {
-					contributionData.repositories[dupIndex].total += repo.contributions.totalCount;
-				} else {
-					contributionData.repositories.push({
-						total: repo.contributions.totalCount,
-						url: repo.repository.resourcePath,
-						name: repo.repository.name,
-						owner: repo.repository.owner.login,
-						homepage: repo.repository.homepageUrl,
-						isForked: repo.repository.isForked,
-						isPrivate: repo.repository.isPrivate,
-						isArchived: repo.repository.isArchived,
-						forkCount: repo.repository.forkCount,
-						description: repo.repository.description,
-						lastUpdated: repo.repository.pushedAt
-					});
-				}
+				getRepoDetails(repo, true);
 			}
 			for (const repo of [
 				...contributions.issueContributionsByRepository,
@@ -355,6 +360,7 @@
 
 				// set contribution data
 				contributionDataPerYear.push(contributions);
+				getRepoDetails(repo, false);
 			}
 
 			// totals over all years
@@ -422,7 +428,6 @@
 <style lang="scss">
 	.user-repo-activity {
 		min-height: 100%;
-		min-width: 500px;
 		.data {
 			margin: 10px;
 			margin-left: 20px;

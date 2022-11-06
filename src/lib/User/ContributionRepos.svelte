@@ -7,40 +7,46 @@
 <div class="repos-wrapper">
 	<div class="title-line">
 		<h4>Repositories by</h4>
-		<select><option>Conttributions</option></select>
+		<select><option>Contributions</option></select>
 	</div>
 	<div class="repos box-dark">
-		<div class="repo box">
-			<div class="repo-left">
-				<h6 class="repo-name">github-profile-analyer</h6>
-			</div>
-			<p class="repo-desc">
-				A Webapp to analyze yours and others Github Profiles using the Github REST API
-			</p>
-			<div class="repo-stats">
-				<div class="stat">
-					<i class="ph-git-commit ph-sm" />
-					<div>
-						<span class="number">120</span>
-						<span class="text">Commits</span>
-					</div>
+		{#each contributionData.repositories as repo}
+			<div class="repo box">
+				<div class="repo-left">
+					<h6 class="repo-name">{repo.name}</h6>
 				</div>
-				<!-- <div class="stat"> -->
-				<!-- 	<i class="ph-star ph-sm" /> -->
-				<!-- 	<div> -->
-				<!-- 		<span class="number">6</span> -->
-				<!-- 		<span class="text">Stars</span> -->
-				<!-- 	</div> -->
-				<!-- </div> -->
-				<div class="stat">
-					<i class="ph-git-fork ph-sm" />
-					<div>
-						<span class="number">2</span>
-						<span class="text">Forks</span>
+				{#if repo.description}
+					<p class="repo-desc">
+						{repo.description}
+					</p>
+				{/if}
+				<div class="repo-stats">
+					<div class="stat">
+						<i class="ph-git-commit ph-sm" />
+						<div>
+							<span class="number">{repo.total}</span>
+							<span class="text">Commits</span>
+						</div>
 					</div>
+					<!-- <div class="stat"> -->
+					<!-- 	<i class="ph-star ph-sm" /> -->
+					<!-- 	<div> -->
+					<!-- 		<span class="number">6</span> -->
+					<!-- 		<span class="text">Stars</span> -->
+					<!-- 	</div> -->
+					<!-- </div> -->
+					{#if repo.forkCount != undefined}
+						<div class="stat">
+							<i class="ph-git-fork ph-sm" />
+							<div>
+								<span class="number">{repo.forkCount}</span>
+								<span class="text">Forks</span>
+							</div>
+						</div>
+					{/if}
 				</div>
 			</div>
-		</div>
+		{/each}
 	</div>
 </div>
 
@@ -48,7 +54,7 @@
 	.repos-wrapper {
 		margin-left: 30px;
 		width: 370px;
-		min-width: 250px;
+		min-width: min(100vw - 20px, 300px);
 		.title-line {
 			display: flex;
 			margin-left: 7px;
@@ -59,23 +65,30 @@
 			margin-top: 6px;
 			width: 100%;
 			height: 370px;
+			overflow-y: scroll;
 
 			.repo {
-				margin: 0 7px;
-				margin-top: 7px;
+				margin: 0 10px;
+				margin-top: 10px;
+				&:last-child {
+					margin-bottom: 10px;
+				}
+
 				padding: 5px 7px;
 				height: 85px;
 				display: flex;
 				gap: 20px;
+				justify-content: space-between;
 
 				.repo-left {
-					width: 200%;
+					width: 200px;
 					.repo-name {
 						word-break: keep-all;
 					}
 				}
 				.repo-desc {
 					min-width: 85px;
+					max-width: 100px;
 					font-size: 8px;
 					color: var(--c-text-muted);
 				}
