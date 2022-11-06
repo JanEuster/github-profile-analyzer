@@ -1,6 +1,6 @@
 <script lang="ts">
 	import BigLink from '$lib/common/BigLink.svelte';
-import type { ContributionData, ContributionRepo } from '$lib/types';
+import type { ContributionData } from '$lib/types';
 	export let contributionData: ContributionData;
 
 </script>
@@ -15,6 +15,8 @@ import type { ContributionData, ContributionRepo } from '$lib/types';
 			<div class="repo box" data-private={String(repo.isPrivate)} data-archived={String(repo.isArchived)} data-forked={String(repo.isForked)}>
 				<div class="repo-left">
 					<h6 class="repo-name"><BigLink url={"https://github.com"+repo.url} text={repo.name}></BigLink></h6>
+					<span>{repo.total} Contributions Total</span>
+					<span>{repo.commitsTotal} Commit Contributions</span>
 				</div>
 				{#if repo.description}
 					<p class="repo-desc">
