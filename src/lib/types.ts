@@ -53,6 +53,7 @@ export type ContributionTotals = {
 
 export type ContributionRepo = {
 	total: number;
+	commitsTotal: number;
 	name: string;
 	owner: string;
 	description: string;

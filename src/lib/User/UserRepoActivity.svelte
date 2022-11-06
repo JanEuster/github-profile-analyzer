@@ -279,9 +279,13 @@
 		}
 		if (dupIndex > -1) {
 			contributionData.repositories[dupIndex].total += repo.contributions.totalCount;
+			if (isCommitData) {
+				contributionData.repositories[dupIndex].commitsTotal += repo.contributions.totalCount;
+			}
 		} else {
 			contributionData.repositories.push({
 				total: repo.contributions.totalCount,
+				commitsTotal: isCommitData ? repo.contributions.totalCount : 0,
 				url: repo.repository.resourcePath,
 				name: repo.repository.name,
 				owner: repo.repository.owner.login,
@@ -428,6 +432,8 @@
 <style lang="scss">
 	.user-repo-activity {
 		min-height: 100%;
+		min-width: 300px;
+		max-width: 1500px;
 		.data {
 			margin: 10px;
 			margin-left: 20px;
