@@ -25,13 +25,13 @@
 						<span class="text">Commits</span>
 					</div>
 				</div>
-				<div class="stat">
-					<i class="ph-star ph-sm" />
-					<div>
-						<span class="number">6</span>
-						<span class="text">Stars</span>
-					</div>
-				</div>
+				<!-- <div class="stat"> -->
+				<!-- 	<i class="ph-star ph-sm" /> -->
+				<!-- 	<div> -->
+				<!-- 		<span class="number">6</span> -->
+				<!-- 		<span class="text">Stars</span> -->
+				<!-- 	</div> -->
+				<!-- </div> -->
 				<div class="stat">
 					<i class="ph-git-fork ph-sm" />
 					<div>

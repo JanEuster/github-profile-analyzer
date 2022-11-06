@@ -4,6 +4,7 @@
 	import type {
 		AuthenticationStore,
 		ContributionData,
+		ContributionRepo,
 		ContributionsYearTotal,
 		ContributionWeek,
 		UserResponse
@@ -12,6 +13,7 @@
 	import { authStore } from '../../stores';
 	import Timeline from './Timeline.svelte';
 	import ContributionStats from './ContributionStats.svelte';
+	import ContributionRepos from './ContributionRepos.svelte';
 
 	export let user: UserResponse;
 	let auth: AuthenticationStore;
@@ -50,7 +52,8 @@
 				years: [] as ContributionsYearTotal[]
 			}
 		},
-		weeks: [] as ContributionWeek[]
+		weeks: [] as ContributionWeek[],
+		repositories: [] as ContributionRepo[]
 	};
 
 	const contributionsQuery = (paramStr: string) => {
@@ -292,11 +295,38 @@
 						const contriDate = new Date(contribution.occurredAt);
 						const years = (contriDate.getFullYear() - timelineStart.getFullYear()) * 365;
 						const contriIndex = years + (dayOfYear(contriDate) - dayOfYear(timelineStart)) - 1;
-						if (daysOfContribution[contriIndex] > 0) {
-							console.log(contriIndex, contribution);
-						}
 						daysOfContribution[contriIndex] += contribution.commitCount ?? 1;
 					}
+				}
+				// fill list of repos that where contributed to
+				// if its not already in the array
+				let dupIndex = -1;
+				for (let i = 0; i < contributionData.repositories.length; i++) {
+					const listedRepo = contributionData.repositories[i];
+					if (
+						repo.repository.name == listedRepo.name &&
+						repo.repository.owner.login == listedRepo.owner
+					) {
+						dupIndex = i;
+						break;
+					}
+				}
+				if (dupIndex > -1) {
+					contributionData.repositories[dupIndex].total += repo.contributions.totalCount;
+				} else {
+					contributionData.repositories.push({
+						total: repo.contributions.totalCount,
+						url: repo.repository.resourcePath,
+						name: repo.repository.name,
+						owner: repo.repository.owner.login,
+						homepage: repo.repository.homepageUrl,
+						isForked: repo.repository.isForked,
+						isPrivate: repo.repository.isPrivate,
+						isArchived: repo.repository.isArchived,
+						forkCount: repo.repository.forkCount,
+						description: repo.repository.description,
+						lastUpdated: repo.repository.pushedAt
+					});
 				}
 			}
 			for (const repo of [
@@ -367,6 +397,7 @@
 			contributionData.totals.pullRequests.total +
 			contributionData.totals.pullRequestReviews.total;
 
+		console.log(contributionData);
 		allContributionDataReceived = true;
 	});
 </script>
@@ -383,7 +414,7 @@
 				{selectedStart}
 				{selectedEnd}
 			/>
-			<ContributionRepos {contributionData}/>
+			<ContributionRepos {contributionData} />
 		{/if}
 	</div>
 </div>
