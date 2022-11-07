@@ -14,6 +14,7 @@
 	import Timeline from './Timeline.svelte';
 	import ContributionStats from './ContributionStats.svelte';
 	import ContributionRepos from './ContributionRepos.svelte';
+import fetchUserContributions from '$lib/graphql/fetchUserContributions';
 
 	export let user: UserResponse;
 	let auth: AuthenticationStore;
@@ -56,212 +57,6 @@
 		repositories: [] as ContributionRepo[]
 	};
 
-	const contributionsQuery = (paramStr: string) => {
-		return {
-			query: `query {
-				user(login: "${user.login}"){
-					contributionsCollection${paramStr}{
-						contributionCalendar{
-							colors
-							totalContributions
-							weeks{
-								contributionDays{
-									color
-									date
-									weekday
-									contributionCount
-								}
-								firstDay
-							}
-						}
-						commitContributionsByRepository(maxRepositories: 50){
-							contributions(last: 100){
-								nodes{
-									commitCount
-									occurredAt
-									resourcePath
-								}
-								totalCount
-							}
-							repository {
-								name
-								owner {
-									login
-									resourcePath
-								}
-								description
-								forkCount
-								homepageUrl
-								isArchived
-								isFork
-								isPrivate
-								pushedAt
-								resourcePath
-							}
-							resourcePath
-						}
-						issueContributionsByRepository{
-							contributions(last: 100){
-								nodes{
-									occurredAt
-									resourcePath
-								}
-								totalCount
-							}
-							repository {
-								name
-								owner {
-									login
-									resourcePath
-								}
-							}
-						}
-						pullRequestContributionsByRepository{
-							contributions(last: 100){
-								nodes{
-									occurredAt
-									resourcePath
-								}
-								totalCount
-							}
-							repository {
-								name
-								owner {
-									login
-									resourcePath
-								}
-							}
-						}
-						pullRequestReviewContributionsByRepository {
-							contributions(last: 100){
-								nodes{
-									occurredAt
-									resourcePath
-								}
-								totalCount
-							}
-							repository {
-								name
-								owner {
-									login
-									resourcePath
-								}
-							}
-						}
-						repositoryContributions(last: 100){
-							nodes {
-								occurredAt
-								repository{
-									name
-									owner {
-										login
-										resourcePath
-									}
-								}
-								resourcePath
-							}
-						}
-						firstIssueContribution{
-							... on CreatedIssueContribution{
-								occurredAt
-								resourcePath
-							}
-							... on RestrictedContribution{
-								occurredAt
-								resourcePath
-							}
-						}
-						firstPullRequestContribution{
-							... on CreatedPullRequestContribution{
-								pullRequest{
-									baseRepository{
-										name
-										owner {
-											login
-											resourcePath
-										}
-									}
-									author{
-										login
-										resourcePath
-									}
-									createdAt
-									closed
-									closedAt
-								}
-								occurredAt
-								resourcePath
-							}
-							... on RestrictedContribution{
-								occurredAt
-								resourcePath
-							}
-						}
-						firstRepositoryContribution{
-							... on CreatedRepositoryContribution{
-								occurredAt
-								repository{
-									name
-									owner {
-										login
-										resourcePath
-									}
-								}
-								resourcePath
-							}
-							... on RestrictedContribution{
-								occurredAt
-								resourcePath
-							}
-						}
-						popularIssueContribution{
-							issue{
-								author{
-									login
-									resourcePath
-								}
-								createdAt
-								closed
-								closedAt
-							}
-							occurredAt
-							resourcePath
-						}
-						popularPullRequestContribution{
-							pullRequest{
-								baseRepository{
-									name
-									owner {
-										login
-										resourcePath
-									}
-								}
-								author{
-									login
-									resourcePath
-								}
-								createdAt
-								closed
-								closedAt
-							}
-							occurredAt
-							resourcePath
-						}
-						totalCommitContributions
-						totalIssueContributions
-						totalPullRequestContributions
-						totalPullRequestReviewContributions
-						totalRepositoriesWithContributedCommits
-						totalRepositoriesWithContributedIssues
-						totalRepositoriesWithContributedPullRequests
-						totalRepositoriesWithContributedPullRequestReviews
-						totalRepositoryContributions
-					}
-				}
-			}
-			`
-		};
-	};
 
 	// fill list of repos that where contributed to
 	// if its not already in the array
@@ -314,17 +109,9 @@
 		for (let year = timelineStart.getFullYear(); year <= timelineEnd.getFullYear(); year++) {
 			let dateStart;
 			dateStart = `${year}-01-01T01:00:01Z`;
-			let paramStr = `(${'from: "' + dateStart + '"'})`;
-			let body = contributionsQuery(paramStr);
-			let contributionsRes = await fetch('https://api.github.com/graphql', {
-				method: 'POST',
-				body: JSON.stringify(body),
-				headers: {
-					authorization: 'Bearer ' + auth.token
-				}
-			});
+			const contributionsRes = fetchUserContributions(auth, user.login, dateStart);
 
-			const contributions = ((await contributionsRes.json()) as GraphQlQueryResponseData).data.user
+			const contributions = (await contributionsRes).data.user
 				.contributionsCollection;
 			for (const repo of contributions.commitContributionsByRepository) {
 				console.log(repo.repository.forkCount)
