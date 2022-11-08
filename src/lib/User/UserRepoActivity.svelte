@@ -114,7 +114,6 @@
 
 			const contributions = (await contributionsRes).data.user.contributionsCollection;
 			for (const repo of contributions.commitContributionsByRepository) {
-				console.log(repo.repository.forkCount);
 				if (repo.contributions.nodes[0] != null) {
 					for (const contribution of repo.contributions.nodes) {
 						const contriDate = new Date(contribution.occurredAt);
@@ -211,7 +210,6 @@
 			});
 		}
 
-		console.log(contributionData);
 		setTimeout(() => {
 			allContributionDataReceived = true;
 		}, 300);

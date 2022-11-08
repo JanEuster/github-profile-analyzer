@@ -1,8 +1,25 @@
 <script lang="ts">
 	import BigLink from '$lib/common/BigLink.svelte';
-import type { ContributionData } from '$lib/types';
+	import type { ContributionData, ContributionRepo } from '$lib/types';
 	export let contributionData: ContributionData;
 
+	const sortedRepos = (): ContributionRepo[] => {
+		// sort repos by total contributions by user
+		const sorted = [] as ContributionRepo[];
+		let unsorted = contributionData.repositories;
+		for (let i = 0; i < contributionData.repositories.length-2; i++) {
+			let highest: [number, number] = [0, unsorted[0].userTotal];
+			unsorted.forEach((repo, j) => {
+				if (repo.userTotal > highest[1]) {
+					highest = [j, repo.userTotal];
+				}
+			})
+			let j = highest[0];
+			sorted.push(...unsorted.slice(j, j+1));
+			unsorted = [...unsorted.slice(0, j), ...unsorted.slice(j+1, unsorted.length)];
+		}
+		return sorted;
+	}
 </script>
 
 <div class="repos-wrapper">
@@ -11,8 +28,7 @@ import type { ContributionData } from '$lib/types';
 		<select><option>Contributions</option></select>
 	</div>
 	<div class="repos box-dark">
-		{#each contributionData.repositories as repo}
-			<div class="repo box" data-private={String(repo.isPrivate)} data-archived={String(repo.isArchived)} data-forked={String(repo.isForked)}>
+		{#each sortedRepos() as repo}
 			<div
 				class="repo box"
 				data-private={String(repo.isPrivate)}
@@ -20,9 +36,10 @@ import type { ContributionData } from '$lib/types';
 				data-forked={String(repo.isForked)}
 			>
 				<div class="repo-left">
-					<h6 class="repo-name"><BigLink url={"https://github.com"+repo.url} text={repo.name}></BigLink></h6>
-					<span>{repo.total} Contributions Total</span>
-					<span>{repo.commitsTotal} Commit Contributions</span>
+					<h6 class="repo-name">
+						<BigLink url={'https://github.com' + repo.url} text={repo.name} />
+					</h6>
+					<span>{repo.userTotal} Contributions Total</span>
 					<span>{repo.userCommitsTotal} Commit Contributions</span>
 				</div>
 				{#if repo.description}
