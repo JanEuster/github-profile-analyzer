@@ -63,6 +63,7 @@ export type ContributionRepo = {
 	userCommitsTotal: number;
 	totals: RepositoryTotals | undefined;
 	name: string;
+	nameWithOwner: string;
 	owner: string;
 	description: string;
 	forkCount: number;

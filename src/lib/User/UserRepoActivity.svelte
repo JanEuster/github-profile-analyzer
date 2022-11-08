@@ -84,6 +84,7 @@
 				totals: undefined,
 				url: repo.repository.resourcePath,
 				name: repo.repository.name,
+				nameWithOwner: repo.repository.nameWithOwner,
 				owner: repo.repository.owner.login,
 				homepage: repo.repository.homepageUrl,
 				isForked: repo.repository.isForked,
@@ -197,6 +198,7 @@
 		for (const repo of contributionData.repositories) {
 			fetchRepositoryStats(auth, repo.owner, repo.name).then((res) => {
 				let newData = res.data.repository;
+				repo.nameWithOwner = newData.nameWithOwner;
 				repo.forkCount = newData.forkCount;
 				repo.totals = {
 					commits: newData.defaultBranchRef
@@ -228,7 +230,7 @@
 				{selectedStart}
 				{selectedEnd}
 			/>
-			<ContributionRepos {contributionData} />
+			<ContributionRepos {user} {contributionData} />
 		{/if}
 	</div>
 </div>

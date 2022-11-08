@@ -1,7 +1,8 @@
 <script lang="ts">
 	import BigLink from '$lib/common/BigLink.svelte';
-	import type { ContributionData, ContributionRepo } from '$lib/types';
+	import type { ContributionData, ContributionRepo, UserResponse } from '$lib/types';
 	export let contributionData: ContributionData;
+	export let user: UserResponse;
 
 	const sortedRepos = (): ContributionRepo[] => {
 		// sort repos by total contributions by user
@@ -18,6 +19,7 @@
 			sorted.push(...unsorted.slice(j, j+1));
 			unsorted = [...unsorted.slice(0, j), ...unsorted.slice(j+1, unsorted.length)];
 		}
+		console.log(sorted);
 		return sorted;
 	}
 </script>
@@ -37,7 +39,7 @@
 			>
 				<div class="repo-left">
 					<h6 class="repo-name">
-						<BigLink url={'https://github.com' + repo.url} text={repo.name} />
+						<BigLink url={'https://github.com' + repo.url} text={repo.owner != user.login ? repo.nameWithOwner : repo.name} />
 					</h6>
 					<span>{repo.userTotal} Contributions Total</span>
 					<span>{repo.userCommitsTotal} Commit Contributions</span>
