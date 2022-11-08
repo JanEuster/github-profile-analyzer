@@ -13,21 +13,29 @@ import type { ContributionData } from '$lib/types';
 	<div class="repos box-dark">
 		{#each contributionData.repositories as repo}
 			<div class="repo box" data-private={String(repo.isPrivate)} data-archived={String(repo.isArchived)} data-forked={String(repo.isForked)}>
+			<div
+				class="repo box"
+				data-private={String(repo.isPrivate)}
+				data-archived={String(repo.isArchived)}
+				data-forked={String(repo.isForked)}
+			>
 				<div class="repo-left">
 					<h6 class="repo-name"><BigLink url={"https://github.com"+repo.url} text={repo.name}></BigLink></h6>
 					<span>{repo.total} Contributions Total</span>
 					<span>{repo.commitsTotal} Commit Contributions</span>
+					<span>{repo.userCommitsTotal} Commit Contributions</span>
 				</div>
 				{#if repo.description}
 					<p class="repo-desc">
 						{repo.description}
 					</p>
 				{/if}
+				{#if repo.totals && !repo.isPrivate}
 				<div class="repo-stats">
 					<div class="stat">
 						<i class="ph-git-commit ph-sm" />
 						<div>
-							<span class="number">{repo.commitsTotal}</span>
+							<span class="number">{repo.totals.commits}</span>
 							<span class="text">Commits</span>
 						</div>
 					</div>
@@ -48,6 +56,7 @@ import type { ContributionData } from '$lib/types';
 						</div>
 					{/if}
 				</div>
+				{/if}
 			</div>
 		{/each}
 	</div>
@@ -83,10 +92,26 @@ import type { ContributionData } from '$lib/types';
 				gap: 20px;
 				justify-content: space-between;
 
+				&[data-private='true'] {
+					background-color: var(--c-private);
+					border-color: var(--c-private-light);
+				}
+				&[data-private='true']::selection {
+					background-color: red;
+				}
+
 				.repo-left {
 					width: 200px;
+					display: flex;
+					gap: 2px;
+					flex-direction: column;
 					.repo-name {
 						word-break: keep-all;
+						margin-bottom: 5px;
+					}
+					span {
+						font-size: 8px;
+						color: var(--c-text-muted);
 					}
 				}
 				.repo-desc {
