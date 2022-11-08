@@ -14,7 +14,8 @@
 	import Timeline from './Timeline.svelte';
 	import ContributionStats from './ContributionStats.svelte';
 	import ContributionRepos from './ContributionRepos.svelte';
-import fetchUserContributions from '$lib/graphql/fetchUserContributions';
+	import fetchUserContributions from '$lib/graphql/fetchUserContributions';
+	import fetchRepositoryStats from '$lib/graphql/fetchRepositoryStats';
 
 	export let user: UserResponse;
 	let auth: AuthenticationStore;
@@ -57,7 +58,6 @@ import fetchUserContributions from '$lib/graphql/fetchUserContributions';
 		repositories: [] as ContributionRepo[]
 	};
 
-
 	// fill list of repos that where contributed to
 	// if its not already in the array
 	const getRepoDetails = (repo: GraphQlQueryResponseData, isCommitData: boolean) => {
@@ -73,14 +73,15 @@ import fetchUserContributions from '$lib/graphql/fetchUserContributions';
 			}
 		}
 		if (dupIndex > -1) {
-			contributionData.repositories[dupIndex].total += repo.contributions.totalCount;
+			contributionData.repositories[dupIndex].userTotal += repo.contributions.totalCount;
 			if (isCommitData) {
-				contributionData.repositories[dupIndex].commitsTotal += repo.contributions.totalCount;
+				contributionData.repositories[dupIndex].userCommitsTotal += repo.contributions.totalCount;
 			}
 		} else {
 			contributionData.repositories.push({
-				total: repo.contributions.totalCount,
-				commitsTotal: isCommitData ? repo.contributions.totalCount : 0,
+				userTotal: repo.contributions.totalCount,
+				userCommitsTotal: isCommitData ? repo.contributions.totalCount : 0,
+				totals: undefined,
 				url: repo.repository.resourcePath,
 				name: repo.repository.name,
 				owner: repo.repository.owner.login,
@@ -88,7 +89,7 @@ import fetchUserContributions from '$lib/graphql/fetchUserContributions';
 				isForked: repo.repository.isForked,
 				isPrivate: repo.repository.isPrivate,
 				isArchived: repo.repository.isArchived,
-				forkCount: repo.repository.forkCount,
+				forkCount: 0,
 				description: repo.repository.description,
 				lastUpdated: repo.repository.pushedAt
 			});
@@ -111,10 +112,9 @@ import fetchUserContributions from '$lib/graphql/fetchUserContributions';
 			dateStart = `${year}-01-01T01:00:01Z`;
 			const contributionsRes = fetchUserContributions(auth, user.login, dateStart);
 
-			const contributions = (await contributionsRes).data.user
-				.contributionsCollection;
+			const contributions = (await contributionsRes).data.user.contributionsCollection;
 			for (const repo of contributions.commitContributionsByRepository) {
-				console.log(repo.repository.forkCount)
+				console.log(repo.repository.forkCount);
 				if (repo.contributions.nodes[0] != null) {
 					for (const contribution of repo.contributions.nodes) {
 						const contriDate = new Date(contribution.occurredAt);
@@ -194,8 +194,27 @@ import fetchUserContributions from '$lib/graphql/fetchUserContributions';
 			contributionData.totals.pullRequests.total +
 			contributionData.totals.pullRequestReviews.total;
 
+		// set repository data that is not related to user request
+		for (const repo of contributionData.repositories) {
+			fetchRepositoryStats(auth, repo.owner, repo.name).then((res) => {
+				let newData = res.data.repository;
+				repo.forkCount = newData.forkCount;
+				repo.totals = {
+					commits: newData.defaultBranchRef
+						? newData.defaultBranchRef.target.history.totalCount
+						: undefined,
+					issues: newData.issues.totalCount,
+					pullRequests: newData.pullRequests.totalCount,
+					stars: newData.stargazerCount,
+					watchers: newData.watchers.totalCount
+				};
+			});
+		}
+
 		console.log(contributionData);
-		allContributionDataReceived = true;
+		setTimeout(() => {
+			allContributionDataReceived = true;
+		}, 300);
 	});
 </script>
 

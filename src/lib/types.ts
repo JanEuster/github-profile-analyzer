@@ -50,10 +50,18 @@ export type ContributionTotals = {
 	pullRequestReviews: ContributionsOfType;
 	repos: ContributionsOfType;
 };
+export type RepositoryTotals = {
+	commits: number;
+	issues: number;
+	pullRequests: number;
+	watchers: number;
+	stars: number;
+};
 
 export type ContributionRepo = {
-	total: number;
-	commitsTotal: number;
+	userTotal: number;
+	userCommitsTotal: number;
+	totals: RepositoryTotals | undefined;
 	name: string;
 	owner: string;
 	description: string;
