@@ -41,14 +41,41 @@ export type ContributionWeek = {
 	firstDay: string;
 	contributionDays: ContributionDay[];
 };
+
+export type ContributionTotals = {
+	total: number;
+	commits: ContributionsOfType;
+	issues: ContributionsOfType;
+	pullRequests: ContributionsOfType;
+	pullRequestReviews: ContributionsOfType;
+	repos: ContributionsOfType;
+};
+export type RepositoryTotals = {
+	commits: number;
+	issues: number;
+	pullRequests: number;
+	watchers: number;
+	stars: number;
+};
+
+export type ContributionRepo = {
+	userTotal: number;
+	userCommitsTotal: number;
+	totals: RepositoryTotals | undefined;
+	name: string;
+	owner: string;
+	description: string;
+	forkCount: number;
+	isForked: boolean;
+	isPrivate: boolean;
+	isArchived: boolean;
+	homepage: string;
+	lastUpdated: Date;
+	url: string;
+};
+
 export type ContributionData = {
-	totals: {
-		total: number;
-		commits: ContributionsOfType;
-		issues: ContributionsOfType;
-		pullRequests: ContributionsOfType;
-		pullRequestReviews: ContributionsOfType;
-		repos: ContributionsOfType;
-	};
+	totals: ContributionTotals;
 	weeks: ContributionWeek[];
+	repositories: ContributionRepo[];
 };

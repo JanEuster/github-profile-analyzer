@@ -4,6 +4,7 @@
 	import type {
 		AuthenticationStore,
 		ContributionData,
+		ContributionRepo,
 		ContributionsYearTotal,
 		ContributionWeek,
 		UserResponse
@@ -12,6 +13,9 @@
 	import { authStore } from '../../stores';
 	import Timeline from './Timeline.svelte';
 	import ContributionStats from './ContributionStats.svelte';
+	import ContributionRepos from './ContributionRepos.svelte';
+	import fetchUserContributions from '$lib/graphql/fetchUserContributions';
+	import fetchRepositoryStats from '$lib/graphql/fetchRepositoryStats';
 
 	export let user: UserResponse;
 	let auth: AuthenticationStore;
@@ -50,214 +54,46 @@
 				years: [] as ContributionsYearTotal[]
 			}
 		},
-		weeks: [] as ContributionWeek[]
+		weeks: [] as ContributionWeek[],
+		repositories: [] as ContributionRepo[]
 	};
 
-	const contributionsQuery = (paramStr: string) => {
-		return {
-			query: `query {
-				user(login: "${user.login}"){
-					contributionsCollection${paramStr}{
-						contributionCalendar{
-							colors
-							totalContributions
-							weeks{
-								contributionDays{
-									color
-									date
-									weekday
-									contributionCount
-								}
-								firstDay
-							}
-						}
-						commitContributionsByRepository(maxRepositories: 50){
-							contributions(last: 100){
-								nodes{
-									commitCount
-									occurredAt
-									resourcePath
-								}
-								totalCount
-							}
-							repository {
-								name
-								owner {
-									login
-									resourcePath
-								}
-								description
-								forkCount
-								homepageUrl
-								isArchived
-								isFork
-								isPrivate
-								pushedAt
-								resourcePath
-							}
-							resourcePath
-						}
-						issueContributionsByRepository{
-							contributions(last: 100){
-								nodes{
-									occurredAt
-									resourcePath
-								}
-								totalCount
-							}
-							repository {
-								name
-								owner {
-									login
-									resourcePath
-								}
-							}
-						}
-						pullRequestContributionsByRepository{
-							contributions(last: 100){
-								nodes{
-									occurredAt
-									resourcePath
-								}
-								totalCount
-							}
-							repository {
-								name
-								owner {
-									login
-									resourcePath
-								}
-							}
-						}
-						pullRequestReviewContributionsByRepository {
-							contributions(last: 100){
-								nodes{
-									occurredAt
-									resourcePath
-								}
-								totalCount
-							}
-							repository {
-								name
-								owner {
-									login
-									resourcePath
-								}
-							}
-						}
-						repositoryContributions(last: 100){
-							nodes {
-								occurredAt
-								repository{
-									name
-									owner {
-										login
-										resourcePath
-									}
-								}
-								resourcePath
-							}
-						}
-						firstIssueContribution{
-							... on CreatedIssueContribution{
-								occurredAt
-								resourcePath
-							}
-							... on RestrictedContribution{
-								occurredAt
-								resourcePath
-							}
-						}
-						firstPullRequestContribution{
-							... on CreatedPullRequestContribution{
-								pullRequest{
-									baseRepository{
-										name
-										owner {
-											login
-											resourcePath
-										}
-									}
-									author{
-										login
-										resourcePath
-									}
-									createdAt
-									closed
-									closedAt
-								}
-								occurredAt
-								resourcePath
-							}
-							... on RestrictedContribution{
-								occurredAt
-								resourcePath
-							}
-						}
-						firstRepositoryContribution{
-							... on CreatedRepositoryContribution{
-								occurredAt
-								repository{
-									name
-									owner {
-										login
-										resourcePath
-									}
-								}
-								resourcePath
-							}
-							... on RestrictedContribution{
-								occurredAt
-								resourcePath
-							}
-						}
-						popularIssueContribution{
-							issue{
-								author{
-									login
-									resourcePath
-								}
-								createdAt
-								closed
-								closedAt
-							}
-							occurredAt
-							resourcePath
-						}
-						popularPullRequestContribution{
-							pullRequest{
-								baseRepository{
-									name
-									owner {
-										login
-										resourcePath
-									}
-								}
-								author{
-									login
-									resourcePath
-								}
-								createdAt
-								closed
-								closedAt
-							}
-							occurredAt
-							resourcePath
-						}
-						totalCommitContributions
-						totalIssueContributions
-						totalPullRequestContributions
-						totalPullRequestReviewContributions
-						totalRepositoriesWithContributedCommits
-						totalRepositoriesWithContributedIssues
-						totalRepositoriesWithContributedPullRequests
-						totalRepositoriesWithContributedPullRequestReviews
-						totalRepositoryContributions
-					}
-				}
+	// fill list of repos that where contributed to
+	// if its not already in the array
+	const getRepoDetails = (repo: GraphQlQueryResponseData, isCommitData: boolean) => {
+		let dupIndex = -1;
+		for (let i = 0; i < contributionData.repositories.length; i++) {
+			const listedRepo = contributionData.repositories[i];
+			if (
+				repo.repository.name == listedRepo.name &&
+				repo.repository.owner.login == listedRepo.owner
+			) {
+				dupIndex = i;
+				break;
 			}
-			`
-		};
+		}
+		if (dupIndex > -1) {
+			contributionData.repositories[dupIndex].userTotal += repo.contributions.totalCount;
+			if (isCommitData) {
+				contributionData.repositories[dupIndex].userCommitsTotal += repo.contributions.totalCount;
+			}
+		} else {
+			contributionData.repositories.push({
+				userTotal: repo.contributions.totalCount,
+				userCommitsTotal: isCommitData ? repo.contributions.totalCount : 0,
+				totals: undefined,
+				url: repo.repository.resourcePath,
+				name: repo.repository.name,
+				owner: repo.repository.owner.login,
+				homepage: repo.repository.homepageUrl,
+				isForked: repo.repository.isForked,
+				isPrivate: repo.repository.isPrivate,
+				isArchived: repo.repository.isArchived,
+				forkCount: 0,
+				description: repo.repository.description,
+				lastUpdated: repo.repository.pushedAt
+			});
+		}
 	};
 
 	onMount(async () => {
@@ -274,30 +110,19 @@
 		for (let year = timelineStart.getFullYear(); year <= timelineEnd.getFullYear(); year++) {
 			let dateStart;
 			dateStart = `${year}-01-01T01:00:01Z`;
-			let paramStr = `(${'from: "' + dateStart + '"'})`;
-			let body = contributionsQuery(paramStr);
-			let contributionsRes = await fetch('https://api.github.com/graphql', {
-				method: 'POST',
-				body: JSON.stringify(body),
-				headers: {
-					authorization: 'Bearer ' + auth.token
-				}
-			});
+			const contributionsRes = fetchUserContributions(auth, user.login, dateStart);
 
-			const contributions = ((await contributionsRes.json()) as GraphQlQueryResponseData).data.user
-				.contributionsCollection;
+			const contributions = (await contributionsRes).data.user.contributionsCollection;
 			for (const repo of contributions.commitContributionsByRepository) {
 				if (repo.contributions.nodes[0] != null) {
 					for (const contribution of repo.contributions.nodes) {
 						const contriDate = new Date(contribution.occurredAt);
 						const years = (contriDate.getFullYear() - timelineStart.getFullYear()) * 365;
 						const contriIndex = years + (dayOfYear(contriDate) - dayOfYear(timelineStart)) - 1;
-						if (daysOfContribution[contriIndex] > 0) {
-							console.log(contriIndex, contribution);
-						}
 						daysOfContribution[contriIndex] += contribution.commitCount ?? 1;
 					}
 				}
+				getRepoDetails(repo, true);
 			}
 			for (const repo of [
 				...contributions.issueContributionsByRepository,
@@ -325,6 +150,7 @@
 
 				// set contribution data
 				contributionDataPerYear.push(contributions);
+				getRepoDetails(repo, false);
 			}
 
 			// totals over all years
@@ -367,7 +193,26 @@
 			contributionData.totals.pullRequests.total +
 			contributionData.totals.pullRequestReviews.total;
 
-		allContributionDataReceived = true;
+		// set repository data that is not related to user request
+		for (const repo of contributionData.repositories) {
+			fetchRepositoryStats(auth, repo.owner, repo.name).then((res) => {
+				let newData = res.data.repository;
+				repo.forkCount = newData.forkCount;
+				repo.totals = {
+					commits: newData.defaultBranchRef
+						? newData.defaultBranchRef.target.history.totalCount
+						: undefined,
+					issues: newData.issues.totalCount,
+					pullRequests: newData.pullRequests.totalCount,
+					stars: newData.stargazerCount,
+					watchers: newData.watchers.totalCount
+				};
+			});
+		}
+
+		setTimeout(() => {
+			allContributionDataReceived = true;
+		}, 300);
 	});
 </script>
 
@@ -383,7 +228,7 @@
 				{selectedStart}
 				{selectedEnd}
 			/>
-			<div class="repos" />
+			<ContributionRepos {contributionData} />
 		{/if}
 	</div>
 </div>
@@ -391,11 +236,13 @@
 <style lang="scss">
 	.user-repo-activity {
 		min-height: 100%;
-		min-width: 500px;
+		min-width: 300px;
+		max-width: 1500px;
 		.data {
 			margin: 10px;
 			margin-left: 20px;
 			margin-top: 20px;
+			display: flex;
 		}
 	}
 </style>

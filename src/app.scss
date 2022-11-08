@@ -12,6 +12,8 @@
 	--c-dark-grey: #2f2f2f;
 	--c-background: #1b1b1b;
 	--c-dark: #0f0f0f;
+	--c-private: #471b6b;
+	--c-private-light: #634779;
 	--border-thin: 1px solid var(--c-grey);
 	--border-thick: 2px solid var(--c-grey);
 	--border-r: 3px;
@@ -30,6 +32,9 @@
 *::selection {
 	color: var(--c-background);
 	background-color: var(--c-green);
+}
+*::-webkit-scrollbar {
+	display: none;
 }
 
 body {
@@ -55,6 +60,11 @@ h5 {
 	font-style: italic;
 	font-weight: 400;
 }
+h6 {
+	font-weight: 400;
+	font-size: 12px;
+	line-height: 14px;
+}
 
 a {
 	color: var(--c-text);
@@ -67,7 +77,8 @@ a {
 }
 
 button,
-input {
+input,
+select {
 	padding: 3px;
 	background: var(--c-dark);
 	border: var(--border-thin);
@@ -92,6 +103,18 @@ input {
 button {
 	cursor: pointer;
 }
+
+select {
+	cursor: pointer;
+	height: 23px;
+	font-size: 10px;
+	color: var(--c-text-muted);
+	&:hover,
+	&:focus {
+		color: var(--c-text);
+	}
+}
+
 .square {
 	aspect-ratio: 1;
 }
